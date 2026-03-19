@@ -18,34 +18,6 @@ A web application designed to help public institutions analyze and select candid
   - **LLM / Embedding Model**: SentenceTransformers (e.g., `all-MiniLM-L6-v2`) or OpenAI `text-embedding-ada-002` for generating dense vector representations of text.
   - **Information Extraction (NER)**: spaCy or a lightweight LLM prompt to extract structured data (skills, years of experience, education levels).
 
-## System Architecture Diagram
-
-```mermaid
-graph TD
-    %% User Interfaces
-    Admin[HR / Public Admin User] -->|Uploads CVs & Manages Jobs| ReactUI[React Frontend UI]
-    Candidate[Candidate] -->|Applies & Uploads CV| ReactUI
-
-    %% API Gateway & Backend
-    ReactUI -->|REST API Calls| FastAPI[FastAPI Backend Server]
-
-    %% Processing & Storage
-    FastAPI -->|Route CV Document| AIModule[AI Processing Module]
-
-    %% AI/ML Pipeline
-    AIModule -->|1. Text Extraction| OCR[PyMuPDF / OCR]
-    AIModule -->|2. Structured Data Extraction| LLM_NER[LLM / spaCy NER]
-    AIModule -->|3. Generate Embeddings| Embeddings[Embedding Model]
-
-    %% Storage
-    FastAPI -->|Store Relational Data| DB[(PostgreSQL Database)]
-    Embeddings -->|Store Vectors| VectorStore[(Vector Store / pgvector)]
-
-    %% Scoring & Matching
-    FastAPI -->|Query Job Embeddings| VectorStore
-    VectorStore -->|Calculate Cosine Similarity| ScoringEngine[Scoring & Ranking Engine]
-    ScoringEngine -->|Return Ranked Candidates| FastAPI
-```
 
 ## Application Flow & Candidate Ranking
 
@@ -122,3 +94,7 @@ cd frontend
 npm install
 npm start
 ```
+
+## System Architecture Diagram
+
+![System Architecture](/assets/skillio-diagram.png)                                                        
