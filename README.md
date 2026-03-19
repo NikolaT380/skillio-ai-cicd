@@ -97,4 +97,4 @@ npm start
 
 ## System Architecture Diagram
 
-![System Architecture](/assets/skillio-diagram.png)                                                        
+![System Architecture](frontend/src/assets/skillio-diagram.png)                                                        
