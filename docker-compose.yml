@@ -1,0 +1,50 @@
+services:
+  # Database Service (PostgreSQL + pgvector)
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: skillio_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-ai_recruitment}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # Backend Service (FastAPI)
+  backend:
+    build: ./backend
+    container_name: skillio_backend
+    restart: always
+    depends_on:
+      - db
+    environment:
+      POSTGRES_SERVER: db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-ai_recruitment}
+      STORAGE_TYPE: local
+      LOCAL_STORAGE_DIR: /app/storage
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./storage:/app/storage
+
+  # Frontend Service (React + Vite)
+  frontend:
+    build: ./frontend
+    container_name: skillio_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://localhost:8000
+
+volumes:
+  postgres_data:
