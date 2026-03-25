@@ -1,13 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from app.core.config import settings
+from app.api.router import router
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     description="Backend API for AI Recruitment System",
 )
+
+app.include_router(router)
 
 # Set up CORS
 origins = [
@@ -23,7 +26,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 @app.get("/")
 def root():
     return {"message": "Welcome to the AI Recruitment System API", "docs": "/docs"}
@@ -31,3 +33,4 @@ def root():
 # TODO: Include API routers
 # from app.api import router as api_router
 # app.include_router(api_router, prefix="/api/v1")
+
