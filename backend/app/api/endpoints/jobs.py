@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.api.deps import get_db
+from app.api.deps import get_db, get_current_user
 from app.api.models.orm.job import Job
+from app.api.models.orm.user import User
 from app.services.embedding_service import generate_embedding
 from app.services.similarity_service import find_similarity
 from app.schemas.job import JobCreate, JobResponse
@@ -11,7 +12,7 @@ from pydantic import UUID4
 router = APIRouter()
 
 @router.post("/", response_model=JobResponse)
-def create_job(job_in: JobCreate, db: Session = Depends(get_db)):
+def create_job(job_in: JobCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     try:
         embedding = generate_embedding(job_in.description)
 
