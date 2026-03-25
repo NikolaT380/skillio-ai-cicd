@@ -10,8 +10,8 @@ class JobBase(BaseModel): # contains the core job details
     description: str = Field(..., min_length=10, description="Full description of the role.")
     company_name: str = Field(..., description="E.g., Ministry of Health, City Council.")
     location: str = Field(..., description="Physical location or Remote.")
-    requirements: List[str] = Field(default=[], description="General skills or requirements (e.g., Python, SQL).")
-    mandatory_criteria: List[str] = Field(default=[], description="Strict requirements (e.g., Bachelor's Degree, Security Clearance).")
+    requirements: List[str] = Field(default_factory=list, description="General skills or requirements (e.g., Python, SQL).")
+    mandatory_criteria: List[str] = Field(default_factory=list, description="Strict requirements (e.g., Bachelor's Degree, Security Clearance).")
 
 class JobCreate(JobBase):
     pass

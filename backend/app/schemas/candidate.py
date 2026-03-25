@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional
 from pydantic import UUID4
 from datetime import datetime
@@ -11,7 +11,7 @@ class CandidateResponse(BaseModel): # represents a parsed candidate profile link
     full_name: str
     email: EmailStr
     phone: Optional[str] = None
-    skills: List[str] = []
+    skills: List[str] = Field(default_factory=list)
     experience_years: int = 0
     education: Optional[str] = None
     cv_url: Optional[str] = None

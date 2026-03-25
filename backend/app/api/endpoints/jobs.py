@@ -20,6 +20,8 @@ def create_job(job_in: JobCreate, db: Session = Depends(get_db)):
             description=job_in.description,
             requirements=job_in.requirements,
             mandatory_criteria=job_in.mandatory_criteria,
+            company_name=job_in.company_name,
+            location=job_in.location,
             embedding=embedding
         )
 
@@ -30,7 +32,7 @@ def create_job(job_in: JobCreate, db: Session = Depends(get_db)):
         return job
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.get("/", response_model=List[JobResponse])
 def get_jobs(db: Session = Depends(get_db)):
@@ -51,7 +53,7 @@ def match_candidates(job_id: UUID4, db: Session = Depends(get_db)):
 
         output.append({
             "candidate_id": r.id,
-            "full_name": r.full_name,
+            # "full_name": r.full_name,
             "score": round(score, 3),
             "status": "recommended" if score > 0.75 else "rejected"
         })

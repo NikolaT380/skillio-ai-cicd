@@ -13,7 +13,7 @@ class Candidate(Base):
     full_name = Column(String, nullable=False)
     email = Column(String, nullable=False)
     phone = Column(String)
-    skills = Column(ARRAY(String), default=[])
+    skills = Column(ARRAY(String), default=list)
     experience_years = Column(Integer, default=0)
     education = Column(Text)
     cv_url = Column(String)
