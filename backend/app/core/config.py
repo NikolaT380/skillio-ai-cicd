@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int
 
     @property
-    def DATABASE_URL(self) -> str:
+    def DATABASE_URL(self) -> str: # building the dynamic connection string
         return (
             f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
             f"@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     LOCAL_STORAGE_DIR: str = "./storage"
 
     OPENAI_API_KEY: str | None = None
-    EMBEDDING_MODEL_NAME: str = "all-MiniLM-L6-v2"
+    EMBEDDING_MODEL_NAME: str = "text-embedding-3-small"
 
     model_config = SettingsConfigDict(
         env_file=".env",
