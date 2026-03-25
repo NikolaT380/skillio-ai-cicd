@@ -1,31 +1,25 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.core.database import SessionLocal
-from app.models.job import Job
+from app.api.deps import get_db
+from app.api.models.orm.job import Job
 from app.services.embedding_service import generate_embedding
 from app.services.similarity_service import find_similarity
-from app.schemas.job import JobResponse
+from app.schemas.job import JobCreate, JobResponse
 from typing import List
+from pydantic import UUID4
 
 router = APIRouter()
 
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
 @router.post("/", response_model=JobResponse)
-def create_job(title: str, description: str, db: Session = Depends(get_db)):
+def create_job(job_in: JobCreate, db: Session = Depends(get_db)):
     try:
-        embedding = generate_embedding(description)
+        embedding = generate_embedding(job_in.description)
 
         job = Job(
-            title=title,
-            description=description,
+            title=job_in.title,
+            description=job_in.description,
+            requirements=job_in.requirements,
+            mandatory_criteria=job_in.mandatory_criteria,
             embedding=embedding
         )
 
@@ -38,14 +32,12 @@ def create_job(title: str, description: str, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/", response_model=List[JobResponse])
 def get_jobs(db: Session = Depends(get_db)):
     return db.query(Job).all()
 
-
 @router.get("/{job_id}/match")
-def match_candidates(job_id: int, db: Session = Depends(get_db)):
+def match_candidates(job_id: UUID4, db: Session = Depends(get_db)):
     job = db.query(Job).filter(Job.id == job_id).first()
 
     if not job:
@@ -58,7 +50,8 @@ def match_candidates(job_id: int, db: Session = Depends(get_db)):
         score = float(r.similarity)
 
         output.append({
-            "cv_id": r.id,
+            "candidate_id": r.id,
+            "full_name": r.full_name,
             "score": round(score, 3),
             "status": "recommended" if score > 0.75 else "rejected"
         })
