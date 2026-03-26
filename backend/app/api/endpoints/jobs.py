@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.api.deps import get_db
+from app.api.deps import get_db, get_current_user
 from app.api.models.orm.job import Job
+from app.api.models.orm.user import User
 from app.services.embedding_service import generate_embedding
 from app.services.similarity_service import find_similarity
 from app.schemas.job import JobCreate, JobResponse
@@ -11,7 +12,7 @@ from pydantic import UUID4
 router = APIRouter()
 
 @router.post("/", response_model=JobResponse)
-def create_job(job_in: JobCreate, db: Session = Depends(get_db)):
+def create_job(job_in: JobCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     try:
         embedding = generate_embedding(job_in.description)
 
@@ -22,7 +23,8 @@ def create_job(job_in: JobCreate, db: Session = Depends(get_db)):
             mandatory_criteria=job_in.mandatory_criteria,
             company_name=job_in.company_name,
             location=job_in.location,
-            embedding=embedding
+            embedding=embedding,
+            creator_id=current_user.id
         )
 
         db.add(job)
@@ -37,6 +39,13 @@ def create_job(job_in: JobCreate, db: Session = Depends(get_db)):
 @router.get("/", response_model=List[JobResponse])
 def get_jobs(db: Session = Depends(get_db)):
     return db.query(Job).all()
+
+@router.get("/{job_id}", response_model=JobResponse)
+def get_job(job_id: UUID4, db: Session = Depends(get_db)):
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return job
 
 @router.get("/{job_id}/match")
 def match_candidates(job_id: UUID4, db: Session = Depends(get_db)):

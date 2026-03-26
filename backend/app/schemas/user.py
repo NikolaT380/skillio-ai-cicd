@@ -8,7 +8,6 @@ from datetime import datetime
 class UserBase(BaseModel):
     email: EmailStr
     full_name: Optional[str] = None
-    role: str = "admin"
 
 class UserCreate(UserBase):
     password: str # the password will be hashed before storage

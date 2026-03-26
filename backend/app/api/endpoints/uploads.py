@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 import os
 import shutil
 import uuid
-from app.api.deps import get_db
+from app.api.deps import get_db, get_current_user
+from app.api.models.orm.user import User
 from app.api.models.orm.candidate import Candidate
 from app.api.models.orm.job import Job
 from app.services.cv_parser import extract_text
@@ -20,8 +21,9 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 @router.post("/cv", response_model=CandidateResponse)
 def upload_cv(
     job_id: UUID4 = Form(...),
-    file: UploadFile = File(...), 
-    db: Session = Depends(get_db)
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     # Verify job exists
     job = db.query(Job).filter(Job.id == job_id).first()

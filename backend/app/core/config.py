@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str | None = None
     EMBEDDING_MODEL_NAME: str = "text-embedding-3-small"
 
+    SECRET_KEY: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
