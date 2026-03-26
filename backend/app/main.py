@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,7 +12,8 @@ from app.api.models.orm import user, job, candidate, token_blacklist  # noqa: F4
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    Base.metadata.create_all(bind=engine)
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, lambda: Base.metadata.create_all(bind=engine))
     yield
 
 

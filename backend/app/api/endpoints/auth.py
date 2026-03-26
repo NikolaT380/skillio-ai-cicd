@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from app.api.deps import get_db, oauth2_scheme
 from app.api.models.orm.user import User
@@ -56,12 +57,19 @@ def logout(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     jti = payload.get("jti")
     exp = payload.get("exp")
 
-    if jti:
-        blacklisted = TokenBlacklist(
-            jti=jti,
-            expires_at=datetime.fromtimestamp(exp, tz=timezone.utc)
-        )
-        db.add(blacklisted)
-        db.commit()
+    if not jti or not exp:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
+    try:
+        expires_at = datetime.fromtimestamp(int(exp), tz=timezone.utc)
+    except (TypeError, ValueError, OSError):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
+    if not db.query(TokenBlacklist).filter(TokenBlacklist.jti == jti).first():
+        try:
+            db.add(TokenBlacklist(jti=jti, expires_at=expires_at))
+            db.commit()
+        except IntegrityError:
+            db.rollback()
 
     return {"message": "Successfully logged out"}
