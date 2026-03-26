@@ -23,7 +23,8 @@ def create_job(job_in: JobCreate, db: Session = Depends(get_db), current_user: U
             mandatory_criteria=job_in.mandatory_criteria,
             company_name=job_in.company_name,
             location=job_in.location,
-            embedding=embedding
+            embedding=embedding,
+            creator_id=current_user.id
         )
 
         db.add(job)
@@ -38,6 +39,13 @@ def create_job(job_in: JobCreate, db: Session = Depends(get_db), current_user: U
 @router.get("/", response_model=List[JobResponse])
 def get_jobs(db: Session = Depends(get_db)):
     return db.query(Job).all()
+
+@router.get("/{job_id}", response_model=JobResponse)
+def get_job(job_id: UUID4, db: Session = Depends(get_db)):
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return job
 
 @router.get("/{job_id}/match")
 def match_candidates(job_id: UUID4, db: Session = Depends(get_db)):
