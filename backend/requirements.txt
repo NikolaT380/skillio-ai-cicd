@@ -33,7 +33,7 @@ openai>=1.34.0
 # Auth
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
-bcrypt==3.2.2
+bcrypt>=4.0.1,<4.1
 
 # Optional
 httpx>=0.27.0
