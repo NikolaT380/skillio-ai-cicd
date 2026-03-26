@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.database import SessionLocal
 from app.core.security import decode_access_token
 from app.api.models.orm.user import User
+from app.api.models.orm.token_blacklist import TokenBlacklist
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -24,6 +25,10 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     )
     payload = decode_access_token(token)
     if payload is None:
+        raise credentials_exception
+
+    jti: str = payload.get("jti")
+    if jti and db.query(TokenBlacklist).filter(TokenBlacklist.jti == jti).first():
         raise credentials_exception
 
     user_id: str = payload.get("sub")
