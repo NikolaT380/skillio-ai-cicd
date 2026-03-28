@@ -3,9 +3,11 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db, get_current_user
 from app.api.models.orm.job import Job
 from app.api.models.orm.user import User
+from app.api.models.orm.candidate import Candidate
 from app.services.embedding_service import generate_embedding
-from app.services.similarity_service import find_similarity
+from app.services.similarity_service import find_similarity,rank_candidates_for_job
 from app.schemas.job import JobCreate, JobResponse
+from app.schemas.candidate import CandidateResponse
 from typing import List
 from pydantic import UUID4
 
@@ -68,3 +70,49 @@ def match_candidates(job_id: UUID4, db: Session = Depends(get_db)):
         })
 
     return output
+@router.get("/{job_id}/candidates", response_model=List[CandidateResponse])
+def get_ranked_candidates(
+    job_id: UUID4,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    results = rank_candidates_for_job(db, job_id)
+
+    if not results:
+        return []
+
+    for row in results:
+        candidate = db.query(Candidate).filter(Candidate.id == row.id).first()
+        if candidate:
+            candidate.match_score = round(float(row.similarity), 4)
+
+    db.commit()
+
+    ranked = (
+        db.query(Candidate)
+        .filter(Candidate.job_id == job_id)
+        .order_by(Candidate.match_score.desc())
+        .all()
+    )
+
+    def build_response(c):
+        return {
+            "id": c.id,
+            "job_id": c.job_id,
+            "full_name": c.full_name,
+            "email": c.email,
+            "phone": c.phone,
+            "skills": c.skills or [],
+            "experience_years": c.experience_years,
+            "education": c.education,
+            "cv_url": c.cv_url,
+            "match_score": c.match_score,
+            "status": "recommended" if c.match_score > 0.75 else "rejected",
+            "created_at": c.created_at,
+        }
+
+    return [build_response(c) for c in ranked]
