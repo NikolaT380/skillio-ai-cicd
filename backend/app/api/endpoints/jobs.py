@@ -13,8 +13,15 @@ router = APIRouter()
 
 @router.post("/", response_model=JobResponse)
 def create_job(job_in: JobCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Create a new job posting and generate its AI embedding for semantic matching.
+    """
     try:
-        embedding = generate_embedding(job_in.description)
+        # Create a rich text context for the embedding: title + description + requirements
+        # This provides a better semantic representation than just the description alone.
+        embedding_content = f"{job_in.title}\n\n{job_in.description}\n\nRequirements: {', '.join(job_in.requirements)}"
+        
+        embedding = generate_embedding(embedding_content)
 
         job = Job(
             title=job_in.title,
@@ -34,7 +41,11 @@ def create_job(job_in: JobCreate, db: Session = Depends(get_db), current_user: U
         return job
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        db.rollback()
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to create job or generate embedding: {str(e)}"
+        )
 
 @router.get("/", response_model=List[JobResponse])
 def get_jobs(db: Session = Depends(get_db)):
@@ -68,3 +79,37 @@ def match_candidates(job_id: UUID4, db: Session = Depends(get_db)):
         })
 
     return output
+
+@router.delete("/{job_id}", status_code=204)
+def delete_job(
+    job_id: UUID4, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Delete a job posting. Only the creator of the job can delete it. 
+    All associated candidates will be deleted automatically due to 
+    the cascading foreign key constraint in the database.
+    """
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Ownership Check: Only the user who created the job can delete it.
+    if job.creator_id != current_user.id:
+        raise HTTPException(
+            status_code=403, 
+            detail="You do not have permission to delete this job"
+        )
+    
+    try:
+        db.delete(job)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to delete job: {str(e)}"
+        )
+    
+    return None
