@@ -12,10 +12,11 @@ from app.services.ai_service import extract_candidate_data
 from app.services.embedding_service import generate_embedding
 from app.schemas.candidate import CandidateResponse
 from pydantic import UUID4
+from app.core.config import settings
 
 router = APIRouter()
 
-UPLOAD_DIR = "uploads/"
+UPLOAD_DIR = settings.LOCAL_STORAGE_DIR
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/cv", response_model=CandidateResponse)
@@ -76,5 +77,9 @@ def upload_cv(
 
         return candidate
 
+    except HTTPException:
+        db.rollback()
+        raise
     except Exception as e:
+        db.rollback()
         raise HTTPException(status_code=500, detail=f"File processing failed: {str(e)}")
