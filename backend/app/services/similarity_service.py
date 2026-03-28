@@ -22,7 +22,8 @@ def rank_candidates_for_job(db: Session, job_id: UUID4) -> list:
                1 - (embedding <=> (SELECT embedding FROM jobs WHERE id = :job_id)) AS similarity
         FROM candidates
         WHERE job_id = :job_id
+          AND embedding IS NOT NULL
         ORDER BY similarity DESC
     """)
-    results = db.execute(query, {"job_id": str(job_id)}).fetchall()
+    results = db.execute(query, {"job_id": job_id}).fetchall()
     return results

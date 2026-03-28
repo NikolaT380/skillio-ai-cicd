@@ -5,7 +5,7 @@ from app.api.models.orm.job import Job
 from app.api.models.orm.user import User
 from app.api.models.orm.candidate import Candidate
 from app.services.embedding_service import generate_embedding
-from app.services.similarity_service import find_similarity,rank_candidates_for_job
+from app.services.similarity_service import find_similarity, rank_candidates_for_job
 from app.schemas.job import JobCreate, JobResponse
 from app.schemas.candidate import CandidateResponse
 from typing import List
@@ -74,23 +74,38 @@ def match_candidates(job_id: UUID4, db: Session = Depends(get_db)):
 def get_ranked_candidates(
     job_id: UUID4,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    _current_user: User = Depends(get_current_user)
 ):
     job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
+
+    if job.embedding is None:
+        raise HTTPException(
+            status_code=409,
+            detail="Job has no embedding. Cannot compute similarity."
+        )
 
     results = rank_candidates_for_job(db, job_id)
 
     if not results:
         return []
 
-    for row in results:
-        candidate = db.query(Candidate).filter(Candidate.id == row.id).first()
-        if candidate:
-            candidate.match_score = round(float(row.similarity), 4)
+    score_map = {row.id: round(float(row.similarity), 4) for row in results if row.similarity is not None}
 
-    db.commit()
+    if score_map:
+        db.query(Candidate).filter(
+            Candidate.job_id == job_id,
+            Candidate.id.in_(score_map.keys())
+        ).all()
+
+        for candidate in db.query(Candidate).filter(
+            Candidate.job_id == job_id,
+            Candidate.id.in_(score_map.keys())
+        ).all():
+            candidate.match_score = score_map[candidate.id]
+
+        db.commit()
 
     ranked = (
         db.query(Candidate)

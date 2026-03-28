@@ -16,6 +16,7 @@ class CandidateResponse(BaseModel): # represents a parsed candidate profile link
     education: Optional[str] = None
     cv_url: Optional[str] = None
     match_score: float = 0.0
+    status: str = "rejected"
     created_at: datetime
     # We omit the 'raw_text' and 'embedding' from the response.
     # The frontend only needs the extracted data and the match_score.
