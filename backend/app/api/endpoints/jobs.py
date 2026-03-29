@@ -70,6 +70,7 @@ def match_candidates(job_id: UUID4, db: Session = Depends(get_db)):
         })
 
     return output
+
 @router.get("/{job_id}/candidates", response_model=List[CandidateResponse])
 def get_ranked_candidates(
     job_id: UUID4,
@@ -93,25 +94,21 @@ def get_ranked_candidates(
 
     score_map = {row.id: round(float(row.similarity), 4) for row in results if row.similarity is not None}
 
-    if score_map:
-        db.query(Candidate).filter(
-            Candidate.job_id == job_id,
-            Candidate.id.in_(score_map.keys())
-        ).all()
-
-        for candidate in db.query(Candidate).filter(
-            Candidate.job_id == job_id,
-            Candidate.id.in_(score_map.keys())
-        ).all():
-            candidate.match_score = score_map[candidate.id]
-
-        db.commit()
-
-    ranked = (
+    ranked_candidates = (
         db.query(Candidate)
         .filter(Candidate.job_id == job_id)
-        .order_by(Candidate.match_score.desc())
         .all()
+    )
+
+    if score_map:
+        for candidate in ranked_candidates:
+            if candidate.id in score_map:
+                candidate.match_score = score_map[candidate.id]
+
+    ranked = sorted(
+        ranked_candidates,
+        key=lambda c: c.match_score if c.match_score is not None else 0.0,
+        reverse=True
     )
 
     def build_response(c):
