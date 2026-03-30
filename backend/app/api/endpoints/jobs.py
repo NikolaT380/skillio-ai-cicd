@@ -1,3 +1,5 @@
+import os
+import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.api.deps import get_db, get_current_user
@@ -8,8 +10,11 @@ from app.services.similarity_service import find_similarity
 from app.schemas.job import JobCreate, JobResponse
 from typing import List
 from pydantic import UUID4
+from app.core.config import settings
+from app.api.models.orm.candidate import Candidate
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 @router.post("/", response_model=JobResponse)
 def create_job(job_in: JobCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -103,13 +108,23 @@ def delete_job(
         )
     
     try:
+        candidates = db.query(Candidate).filter(Candidate.job_id == job_id).all()
+        for candidate in candidates:
+            if candidate.cv_url and settings.STORAGE_TYPE == "local":
+                try:
+                    resolved_path = os.path.abspath(candidate.cv_url)
+                    storage_dir = os.path.abspath(settings.LOCAL_STORAGE_DIR)
+                    if resolved_path.startswith(storage_dir) and os.path.exists(resolved_path):
+                        os.remove(resolved_path)
+                except Exception as fe:
+                    logger.warning(f"Failed to delete associated CV file {candidate.cv_url}: {fe}")
+
         db.delete(job)
         db.commit()
     except Exception as e:
         db.rollback()
+        logger.error(f"Database error deleting job: {e}")
         raise HTTPException(
             status_code=500, 
-            detail=f"Failed to delete job"
+            detail="Failed to delete job"
         )
-    
-    pass
