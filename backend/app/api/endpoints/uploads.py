@@ -82,4 +82,4 @@ def upload_cv(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"File processing failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"File processing failed.")
