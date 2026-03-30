@@ -14,7 +14,6 @@ class CandidateResponse(BaseModel): # represents a parsed candidate profile link
     skills: List[str] = Field(default_factory=list)
     experience_years: int = 0
     education: Optional[str] = None
-    cv_url: Optional[str] = None
     match_score: float = 0.0
     created_at: datetime
     # We omit the 'raw_text' and 'embedding' from the response.

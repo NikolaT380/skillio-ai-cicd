@@ -1,16 +1,19 @@
 import os
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from pydantic import UUID4
 
 from app.api.deps import get_db, get_current_user
+from app.core.config import settings
 from app.api.models.orm.candidate import Candidate
 from app.api.models.orm.job import Job
 from app.api.models.orm.user import User
 from app.schemas.candidate import CandidateResponse
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.get("/", response_model=List[CandidateResponse])
@@ -73,17 +76,21 @@ def delete_candidate(
         
     try:
         # Delete file from local storage if it exists
-        if candidate.cv_url and os.path.exists(candidate.cv_url):
+        if candidate.cv_url and settings.STORAGE_TYPE == "local":
             try:
-                os.remove(candidate.cv_url)
+                resolved_path = os.path.abspath(candidate.cv_url)
+                storage_dir = os.path.abspath(settings.LOCAL_STORAGE_DIR)
+                if resolved_path.startswith(storage_dir) and os.path.exists(resolved_path):
+                    os.remove(resolved_path)
             except Exception as fe:
-                print(f"Warning: Failed to delete associated CV file {candidate.cv_url}: {fe}")
+                logger.warning(f"Failed to delete associated CV file {candidate.cv_url}: {fe}")
                 # We log it but do not crash the DB deletion
 
         db.delete(candidate)
         db.commit()
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Database error deleting candidate: {str(e)}")
+        logger.error(f"Database error deleting candidate: {e}")
+        raise HTTPException(status_code=500, detail="Database error deleting candidate")
         
     return None
