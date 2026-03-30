@@ -44,7 +44,7 @@ def create_job(job_in: JobCreate, db: Session = Depends(get_db), current_user: U
         db.rollback()
         raise HTTPException(
             status_code=500, 
-            detail=f"Failed to create job or generate embedding: {str(e)}"
+            detail=f"Failed to create job or generate embedding"
         )
 
 @router.get("/", response_model=List[JobResponse])
@@ -109,7 +109,7 @@ def delete_job(
         db.rollback()
         raise HTTPException(
             status_code=500, 
-            detail=f"Failed to delete job: {str(e)}"
+            detail=f"Failed to delete job"
         )
     
-    return None
+    pass
