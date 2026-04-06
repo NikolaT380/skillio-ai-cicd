@@ -14,11 +14,11 @@ def extract_candidate_data(raw_text: str) -> dict:
     - "email": (string, candidate's email)
     - "phone": (string, candidate's phone number, or null)
     - "skills": (array of strings, key skills)
-    - "experience_years": (integer, estimated total years of experience, default 0 if unknown)
+    - "experience_total_months": (integer, total months of professional experience/internships. Be thorough in counting.)
     - "education": (string, highest education degree/institution)
 
     CV Text:
-    {raw_text[:3000]} # Limit to first 3000 chars to save tokens if needed
+    {raw_text[:4000]} # Increased limit slightly for better context
     """
     
     response = client.chat.completions.create(
