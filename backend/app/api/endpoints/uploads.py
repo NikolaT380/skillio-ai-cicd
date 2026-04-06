@@ -104,6 +104,7 @@ def upload_cv(
         # Re-raise HTTPExceptions so we don't accidentally turn a 400 into a 500
         raise
     except Exception as e:
+        db.rollback()
         raise HTTPException(status_code=500, detail=f"File processing failed: {str(e)}")
     finally:
         # Cleanup: Ensure the temporary file is deleted if it still exists (e.g. if move failed or API crashed)
