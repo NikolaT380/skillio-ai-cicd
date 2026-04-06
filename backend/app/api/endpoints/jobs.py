@@ -64,7 +64,7 @@ def match_candidates(job_id: UUID4, db: Session = Depends(get_db)):
             "candidate_id": r.id,
             # "full_name": r.full_name,
             "score": round(score, 3),
-            "status": "recommended" if score > 0.75 else "rejected"
+            "status": "recommended" if score > 0.40 else "rejected"
         })
 
     return output
