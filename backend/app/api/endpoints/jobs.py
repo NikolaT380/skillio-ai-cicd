@@ -44,7 +44,7 @@ def create_job(job_in: JobCreate, db: Session = Depends(get_db), current_user: U
         db.rollback()
         raise HTTPException(
             status_code=500, 
-            detail=f"Failed to create job or generate embedding: {str(e)}"
+            detail="An internal error occurred while attempting to create the job."
         )
 
 @router.get("/", response_model=List[JobResponse])
@@ -81,15 +81,11 @@ def match_candidates(job_id: UUID4, db: Session = Depends(get_db)):
     return output
 
 @router.delete("/{job_id}", status_code=204)
-def delete_job(
-    job_id: UUID4, 
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
+def delete_job(job_id: UUID4, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
-    Delete a job posting. Only the creator of the job can delete it. 
-    All associated candidates will be deleted automatically due to 
-    the cascading foreign key constraint in the database.
+        Delete a job posting. Only the creator of the job can delete it.
+        All associated candidates will be deleted automatically due to
+        the cascading foreign key constraint in the database.
     """
     job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
