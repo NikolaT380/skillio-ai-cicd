@@ -8,7 +8,7 @@ def extract_candidate_data(raw_text: str) -> dict:
     prompt = f"""
     You are an expert HR assistant. Extract the following information from the given CV text.
     Return ONLY a valid JSON object with the exact keys below. Do not add markdown blocks like ```json.
-    
+
     Keys:
     - "full_name": (string, candidate's name)
     - "email": (string, candidate's email)
@@ -20,13 +20,13 @@ def extract_candidate_data(raw_text: str) -> dict:
     CV Text:
     {raw_text[:4000]} # Increased limit slightly for better context
     """
-    
+
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.0
     )
-    
+
     try:
         content = response.choices[0].message.content.strip()
         # sometimes OpenAI adds markdown json block even if told not to
@@ -42,6 +42,6 @@ def extract_candidate_data(raw_text: str) -> dict:
             "email": "unknown@example.com",
             "phone": None,
             "skills": [],
-            "experience_years": 0,
+            "experience_total_months": 0,
             "education": "Unknown"
         }

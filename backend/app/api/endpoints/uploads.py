@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 import os
 import shutil
 import uuid
-from app.api.deps import get_db, get_current_user
+from app.api.deps import get_db
 from app.api.models.orm.candidate import Candidate
 from app.api.models.orm.job import Job
 from app.services.cv_parser import extract_text
@@ -11,7 +11,6 @@ from app.services.ai_service import extract_candidate_data
 from app.services.embedding_service import generate_embedding
 from app.schemas.candidate import CandidateResponse
 from app.core.config import settings
-from pydantic import UUID4
 
 router = APIRouter()
 
@@ -41,6 +40,8 @@ def upload_cv(
             detail="Unsupported file type. Please upload PDF or DOCX."
         )
 
+    temp_path = None
+    
     try:
         unique_name = f"{uuid.uuid4()}.{file_ext}"
 
@@ -57,7 +58,6 @@ def upload_cv(
         with open(temp_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-
         extracted_text = extract_text(temp_path)
 
         if not extracted_text.strip():
@@ -73,7 +73,12 @@ def upload_cv(
         shutil.move(temp_path, permanent_path)
 
         # Handle experience conversion (Months -> Years for DB model)
-        total_months = candidate_data.get("experience_total_months", 0)
+        raw_months = candidate_data.get("experience_total_months", 0)
+        try:
+            total_months = int(raw_months) if raw_months is not None else 0
+        except (ValueError, TypeError):
+            total_months = 0 # defaulting to 0 if the cast fails or the value is None
+
         exp_years = total_months // 12
 
         candidate = Candidate(
@@ -84,7 +89,7 @@ def upload_cv(
             skills=candidate_data.get("skills", []),
             experience_years=exp_years,
             education=candidate_data.get("education"),
-            cv_url=permanent_path, # relative path pointing to /app/storage/
+            cv_url=unique_name, # relative path - meaning if we migrate to cloud storage (like AWS S3) in the future, our database records will still be valid. It will construct the full URL
             raw_text=extracted_text,
             embedding=embedding
         )
@@ -95,5 +100,15 @@ def upload_cv(
 
         return candidate
 
+    except HTTPException:
+        # Re-raise HTTPExceptions so we don't accidentally turn a 400 into a 500
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File processing failed: {str(e)}")
+    finally:
+        # Cleanup: Ensure the temporary file is deleted if it still exists (e.g. if move failed or API crashed)
+        if temp_path and os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except Exception as cleanup_error:
+                print(f"Warning: Failed to clean up temp file {temp_path}: {cleanup_error}")

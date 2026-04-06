@@ -20,8 +20,6 @@ CREATE TABLE IF NOT EXISTS token_blacklist (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Index for fast token validation during every API request
-CREATE INDEX IF NOT EXISTS token_blacklist_jti_idx ON token_blacklist(jti);
 -- Index for fast cleanup of expired tokens
 CREATE INDEX IF NOT EXISTS token_blacklist_expires_at_idx ON token_blacklist(expires_at);
 
