@@ -19,7 +19,9 @@ class Settings(BaseSettings):
         )
 
     STORAGE_TYPE: str = "local"
-    LOCAL_STORAGE_DIR: str = "./storage"
+    LOCAL_STORAGE_DIR: str = "/app/storage"
+    TEMP_UPLOAD_DIR: str = "/app/uploads"
+
 
     OPENAI_API_KEY: str | None = None
     EMBEDDING_MODEL_NAME: str = "text-embedding-3-small"

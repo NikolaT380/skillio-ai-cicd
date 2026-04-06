@@ -80,21 +80,17 @@ def match_candidates(job_id: UUID4, db: Session = Depends(get_db)):
             "candidate_id": r.id,
             # "full_name": r.full_name,
             "score": round(score, 3),
-            "status": "recommended" if score > 0.75 else "rejected"
+            "status": "recommended" if score > 0.40 else "rejected"
         })
 
     return output
 
 @router.delete("/{job_id}", status_code=204)
-def delete_job(
-    job_id: UUID4, 
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
+def delete_job(job_id: UUID4, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
-    Delete a job posting. Only the creator of the job can delete it. 
-    All associated candidates will be deleted automatically due to 
-    the cascading foreign key constraint in the database.
+        Delete a job posting. Only the creator of the job can delete it.
+        All associated candidates will be deleted automatically due to
+        the cascading foreign key constraint in the database.
     """
     job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
