@@ -5,9 +5,8 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db, get_current_user
 from app.api.models.orm.job import Job
 from app.api.models.orm.user import User
-from app.api.models.orm.candidate import Candidate
 from app.services.embedding_service import generate_embedding
-from app.services.similarity_service import find_similarity, rank_candidates_for_job
+from app.services.similarity_service import rank_candidates_for_job
 from app.schemas.job import JobCreate, JobResponse
 from app.schemas.candidate import CandidateResponse
 from typing import List
@@ -65,28 +64,6 @@ def get_job(job_id: UUID4, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Job not found")
     return job
 
-@router.get("/{job_id}/match")
-def match_candidates(job_id: UUID4, db: Session = Depends(get_db)):
-    job = db.query(Job).filter(Job.id == job_id).first()
-
-    if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
-
-    results = find_similarity(db, job_id)
-
-    output = []
-    for r in results:
-        score = float(r.similarity)
-
-        output.append({
-            "candidate_id": r.id,
-            # "full_name": r.full_name,
-            "score": round(score, 3),
-            "status": "recommended" if score > 0.40 else "rejected"
-        })
-
-    return output
-
 @router.get("/{job_id}/candidates", response_model=List[CandidateResponse])
 def get_ranked_candidates(
     job_id: UUID4,
@@ -105,42 +82,79 @@ def get_ranked_candidates(
 
     results = rank_candidates_for_job(db, job_id)
 
-    if not results:
-        return []
-
+    # Create a dictionary mapping candidate IDs to their similarity scores
+    # If results is empty (no candidates have embeddings), score_map will simply be an empty dict
     score_map = {row.id: round(float(row.similarity), 4) for row in results if row.similarity is not None}
 
-    ranked_candidates = (
-        db.query(Candidate)
-        .filter(Candidate.job_id == job_id)
-        .all()
-    )
+    # Fetch the actual candidate objects from the DB (All candidates for this job)
+    candidates = db.query(Candidate).filter(Candidate.job_id == job_id).all()
 
-    if score_map:
-        for candidate in ranked_candidates:
-            if candidate.id in score_map:
-                candidate.match_score = score_map[candidate.id]
+    if not candidates:
+        return []
 
-    ranked = sorted(
-        ranked_candidates,
-        key=lambda c: c.match_score if c.match_score is not None else 0.0,
-        reverse=True
-    )
+    response_list = []
+    
+    for candidate in candidates:
+        # Get the score from the map, defaulting to 0.0 if they weren't in the ranking results 
+        # (e.g. if their embedding is NULL)
+        current_score = score_map.get(candidate.id, 0.0)
+        
+        response_list.append({
+            "id": candidate.id,
+            "job_id": candidate.job_id,
+            "full_name": candidate.full_name,
+            "email": candidate.email,
+            "phone": candidate.phone,
+            "skills": candidate.skills or [],
+            "experience_years": candidate.experience_years,
+            "education": candidate.education,
+            "cv_url": candidate.cv_url,
+            "match_score": current_score,
+            "status": "recommended" if current_score > 0.40 else "rejected",
+            "created_at": candidate.created_at,
+        })
 
-    def build_response(c):
-        return {
-            "id": c.id,
-            "job_id": c.job_id,
-            "full_name": c.full_name,
-            "email": c.email,
-            "phone": c.phone,
-            "skills": c.skills or [],
-            "experience_years": c.experience_years,
-            "education": c.education,
-            "cv_url": c.cv_url,
-            "match_score": c.match_score,
-            "status": "recommended" if c.match_score > 0.75 else "rejected",
-            "created_at": c.created_at,
-        }
+    # Sort the final list by match_score before returning
+    response_list.sort(key=lambda x: x["match_score"], reverse=True)
 
-    return [build_response(c) for c in ranked]
+    return response_list
+
+@router.delete("/{job_id}", status_code=204)
+def delete_job(job_id: UUID4, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+        Delete a job posting. Only the creator of the job can delete it.
+        All associated candidates will be deleted automatically due to
+        the cascading foreign key constraint in the database.
+    """
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Ownership Check: Only the user who created the job can delete it.
+    if job.creator_id != current_user.id:
+        raise HTTPException(
+            status_code=403, 
+            detail="You do not have permission to delete this job"
+        )
+    
+    try:
+        candidates = db.query(Candidate).filter(Candidate.job_id == job_id).all()
+        for candidate in candidates:
+            if candidate.cv_url and settings.STORAGE_TYPE == "local":
+                try:
+                    resolved_path = os.path.abspath(candidate.cv_url)
+                    storage_dir = os.path.abspath(settings.LOCAL_STORAGE_DIR)
+                    if resolved_path.startswith(storage_dir) and os.path.exists(resolved_path):
+                        os.remove(resolved_path)
+                except Exception as fe:
+                    logger.warning(f"Failed to delete associated CV file {candidate.cv_url}: {fe}")
+
+        db.delete(job)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Database error deleting job: {e}")
+        raise HTTPException(
+            status_code=500, 
+            detail="Failed to delete job"
+        )
