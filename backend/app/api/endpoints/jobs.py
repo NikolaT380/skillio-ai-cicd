@@ -1,3 +1,5 @@
+import os
+import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.api.deps import get_db, get_current_user
@@ -10,13 +12,23 @@ from app.schemas.job import JobCreate, JobResponse
 from app.schemas.candidate import CandidateResponse
 from typing import List
 from pydantic import UUID4
+from app.core.config import settings
+from app.api.models.orm.candidate import Candidate
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 @router.post("/", response_model=JobResponse)
 def create_job(job_in: JobCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Create a new job posting and generate its AI embedding for semantic matching.
+    """
     try:
-        embedding = generate_embedding(job_in.description)
+        # Create a rich text context for the embedding: title + description + requirements
+        # This provides a better semantic representation than just the description alone.
+        embedding_content = f"{job_in.title}\n\n{job_in.description}\n\nRequirements: {', '.join(job_in.requirements)}"
+        
+        embedding = generate_embedding(embedding_content)
 
         job = Job(
             title=job_in.title,
@@ -36,7 +48,11 @@ def create_job(job_in: JobCreate, db: Session = Depends(get_db), current_user: U
         return job
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        db.rollback()
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to create job or generate embedding"
+        )
 
 @router.get("/", response_model=List[JobResponse])
 def get_jobs(db: Session = Depends(get_db)):
@@ -66,7 +82,7 @@ def match_candidates(job_id: UUID4, db: Session = Depends(get_db)):
             "candidate_id": r.id,
             # "full_name": r.full_name,
             "score": round(score, 3),
-            "status": "recommended" if score > 0.75 else "rejected"
+            "status": "recommended" if score > 0.40 else "rejected"
         })
 
     return output
