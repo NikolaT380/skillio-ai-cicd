@@ -6,8 +6,9 @@ from app.api.deps import get_db, get_current_user
 from app.api.models.orm.job import Job
 from app.api.models.orm.user import User
 from app.services.embedding_service import generate_embedding
-from app.services.similarity_service import find_similarity
+from app.services.similarity_service import rank_candidates_for_job
 from app.schemas.job import JobCreate, JobResponse
+from app.schemas.candidate import CandidateResponse
 from typing import List
 from pydantic import UUID4
 from app.core.config import settings
@@ -63,27 +64,60 @@ def get_job(job_id: UUID4, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Job not found")
     return job
 
-@router.get("/{job_id}/match")
-def match_candidates(job_id: UUID4, db: Session = Depends(get_db)):
+@router.get("/{job_id}/candidates", response_model=List[CandidateResponse])
+def get_ranked_candidates(
+    job_id: UUID4,
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user)
+):
     job = db.query(Job).filter(Job.id == job_id).first()
-
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    results = find_similarity(db, job_id)
+    if job.embedding is None:
+        raise HTTPException(
+            status_code=409,
+            detail="Job has no embedding. Cannot compute similarity."
+        )
 
-    output = []
-    for r in results:
-        score = float(r.similarity)
+    results = rank_candidates_for_job(db, job_id)
 
-        output.append({
-            "candidate_id": r.id,
-            # "full_name": r.full_name,
-            "score": round(score, 3),
-            "status": "recommended" if score > 0.40 else "rejected"
+    # Create a dictionary mapping candidate IDs to their similarity scores
+    # If results is empty (no candidates have embeddings), score_map will simply be an empty dict
+    score_map = {row.id: round(float(row.similarity), 4) for row in results if row.similarity is not None}
+
+    # Fetch the actual candidate objects from the DB (All candidates for this job)
+    candidates = db.query(Candidate).filter(Candidate.job_id == job_id).all()
+
+    if not candidates:
+        return []
+
+    response_list = []
+    
+    for candidate in candidates:
+        # Get the score from the map, defaulting to 0.0 if they weren't in the ranking results 
+        # (e.g. if their embedding is NULL)
+        current_score = score_map.get(candidate.id, 0.0)
+        
+        response_list.append({
+            "id": candidate.id,
+            "job_id": candidate.job_id,
+            "full_name": candidate.full_name,
+            "email": candidate.email,
+            "phone": candidate.phone,
+            "skills": candidate.skills or [],
+            "experience_years": candidate.experience_years,
+            "education": candidate.education,
+            "cv_url": candidate.cv_url,
+            "match_score": current_score,
+            "status": "recommended" if current_score > 0.40 else "rejected",
+            "created_at": candidate.created_at,
         })
 
-    return output
+    # Sort the final list by match_score before returning
+    response_list.sort(key=lambda x: x["match_score"], reverse=True)
+
+    return response_list
 
 @router.delete("/{job_id}", status_code=204)
 def delete_job(job_id: UUID4, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
