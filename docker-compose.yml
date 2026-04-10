@@ -28,6 +28,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-ai_recruitment}
       STORAGE_TYPE: local
       LOCAL_STORAGE_DIR: /app/storage
+      TEMP_UPLOAD_DIR: /app/uploads
     ports:
       - "8000:8000"
     volumes:

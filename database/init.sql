@@ -1,5 +1,7 @@
 -- Enable the pgvector extension for AI similarity search
 CREATE EXTENSION IF NOT EXISTS vector;
+-- Enable pgcrypto for gen_random_uuid() compatibility
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- Users Table (HR / Public Admin)
 CREATE TABLE IF NOT EXISTS users (
@@ -12,15 +14,28 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Token Blacklist Table (For JWT Logout)
+CREATE TABLE IF NOT EXISTS token_blacklist (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    jti VARCHAR(255) UNIQUE NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Index for fast cleanup of expired tokens
+CREATE INDEX IF NOT EXISTS token_blacklist_expires_at_idx ON token_blacklist(expires_at);
+
 -- Job Postings Table
 CREATE TABLE IF NOT EXISTS jobs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     creator_id UUID REFERENCES users(id),
     title VARCHAR(255) NOT NULL,
-...
+    description TEXT NOT NULL,
+    company_name VARCHAR(255) NOT NULL,
+    location VARCHAR(255) NOT NULL,
     requirements TEXT[] DEFAULT '{}',
     mandatory_criteria TEXT[] DEFAULT '{}',
-    embedding vector(384), -- Matches all-MiniLM-L6-v2 dimension
+    embedding vector(1536),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -36,11 +51,13 @@ CREATE TABLE IF NOT EXISTS candidates (
     education TEXT,
     cv_url VARCHAR(255),
     raw_text TEXT,
-    embedding vector(384), -- Matches all-MiniLM-L6-v2 dimension
+    embedding vector(1536),
     match_score FLOAT DEFAULT 0.0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS candidates_job_id_idx ON candidates(job_id);
-CREATE INDEX IF NOT EXISTS candidates_embedding_idx ON candidates USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+-- Note: IVFFlat index works best after you have some data.
+-- For a small starter DB, a simple HNSW or no index is also fine, but keeping yours:
+-- CREATE INDEX IF NOT EXISTS candidates_embedding_idx ON candidates USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
