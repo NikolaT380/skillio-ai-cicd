@@ -116,12 +116,12 @@ def upload_cv(
 
         return candidate
 
-        except HTTPException:
+    except HTTPException:
         # Re-raise HTTPExceptions so we don't accidentally turn a 400 into a 500
         raise
-        except Exception as e:
+    except Exception as e:
         db.rollback()
-        # If the file was moved but something failed right after, attempt to delete the permanent file
+        # If the file was moved but something failed right after, attefmpt to delete the permanent file
         try:
             if 'permanent_path' in locals() and os.path.exists(permanent_path):
                 os.remove(permanent_path)
@@ -131,7 +131,7 @@ def upload_cv(
         logger.error(f"File processing failed: {str(e)}", exc_info=True)
         # Return a generic error message to the client
         raise HTTPException(status_code=500, detail="An internal server error occurred while processing the file.")
-        finally:
+    finally:
         # Explicitly close the file handle to prevent file descriptor leaks under load
         try:
             file.file.close()
