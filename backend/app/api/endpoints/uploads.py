@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Form
 from sqlalchemy.orm import Session
 import os
+import logging
 import shutil
 import uuid
 from app.api.deps import get_db
@@ -9,8 +10,10 @@ from app.api.models.orm.job import Job
 from app.services.cv_parser import extract_text
 from app.services.ai_service import extract_candidate_data
 from app.services.embedding_service import generate_embedding
-from app.schemas.candidate import CandidateResponse
+from app.schemas.candidate import CandidateResponse, CandidateExtract
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -20,6 +23,19 @@ def upload_cv(
     file: UploadFile = File(...), 
     db: Session = Depends(get_db)
 ):
+    """
+    Process a candidate's CV upload and extract AI-driven insights.
+    
+    This endpoint takes a PDF or DOCX file and performs the following:
+    1. Extracts raw text using PyMuPDF or python-docx.
+    2. Sends the text to OpenAI (gpt-4o-mini) to perform Named Entity Recognition (NER),
+       extracting the candidate's name, email, skills, and experience.
+    3. Generates a 1536-dimensional semantic vector embedding using OpenAI.
+    4. Safely moves the processed file to permanent local storage.
+    5. Saves the structured candidate profile to the database.
+    
+    Note: This is a public-facing endpoint so candidates can apply without an account.
+    """
     # Convert string back to UUID for database query
     try:
         job_uuid = uuid.UUID(job_id)
@@ -30,6 +46,9 @@ def upload_cv(
     job = db.query(Job).filter(Job.id == job_uuid).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
+
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="File must have a filename.")
 
     file_ext = file.filename.split(".")[-1].lower()
     ALLOWED_TYPES = ["pdf", "docx"]
@@ -64,31 +83,25 @@ def upload_cv(
             raise HTTPException(status_code=400, detail="Failed to extract text from CV")
 
         # Extract structured data using OpenAI
-        candidate_data = extract_candidate_data(extracted_text)
+        raw_candidate_data = extract_candidate_data(extracted_text)
+
+        # Validate and coerce the AI output using Pydantic
+        validated_data = CandidateExtract(**raw_candidate_data)
 
         # Generate embedding for the raw text using OpenAI
         embedding = generate_embedding(extracted_text)
 
-        # Move file to permanent storage now that processing is done
-        shutil.move(temp_path, permanent_path)
-
         # Handle experience conversion (Months -> Years for DB model)
-        raw_months = candidate_data.get("experience_total_months", 0)
-        try:
-            total_months = int(raw_months) if raw_months is not None else 0
-        except (ValueError, TypeError):
-            total_months = 0 # defaulting to 0 if the cast fails or the value is None
-
-        exp_years = total_months // 12
+        exp_years = validated_data.experience_total_months // 12
 
         candidate = Candidate(
             job_id=job_uuid,
-            full_name=candidate_data.get("full_name", "Unknown"),
-            email=candidate_data.get("email", "unknown@example.com"),
-            phone=candidate_data.get("phone"),
-            skills=candidate_data.get("skills", []),
+            full_name=validated_data.full_name,
+            email=validated_data.email,
+            phone=validated_data.phone,
+            skills=validated_data.skills,
             experience_years=exp_years,
-            education=candidate_data.get("education"),
+            education=validated_data.education,
             cv_url=unique_name, # relative path - meaning if we migrate to cloud storage (like AWS S3) in the future, our database records will still be valid. It will construct the full URL
             raw_text=extracted_text,
             embedding=embedding
@@ -98,18 +111,36 @@ def upload_cv(
         db.commit()
         db.refresh(candidate)
 
+        # Move file to permanent storage ONLY AFTER database commit is successful
+        shutil.move(temp_path, permanent_path)
+
         return candidate
 
-    except HTTPException:
+        except HTTPException:
         # Re-raise HTTPExceptions so we don't accidentally turn a 400 into a 500
         raise
-    except Exception as e:
+        except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"File processing failed: {str(e)}")
-    finally:
+        # If the file was moved but something failed right after, attempt to delete the permanent file
+        try:
+            if 'permanent_path' in locals() and os.path.exists(permanent_path):
+                os.remove(permanent_path)
+        except Exception as cleanup_error:
+            logger.warning(f"Failed to clean up permanent file after rollback {permanent_path}: {cleanup_error}", exc_info=True)
+
+        logger.error(f"File processing failed: {str(e)}", exc_info=True)
+        # Return a generic error message to the client
+        raise HTTPException(status_code=500, detail="An internal server error occurred while processing the file.")
+        finally:
+        # Explicitly close the file handle to prevent file descriptor leaks under load
+        try:
+            file.file.close()
+        except Exception as e:
+            logger.warning(f"Failed to close upload file descriptor: {e}")
+
         # Cleanup: Ensure the temporary file is deleted if it still exists (e.g. if move failed or API crashed)
         if temp_path and os.path.exists(temp_path):
             try:
                 os.remove(temp_path)
             except Exception as cleanup_error:
-                print(f"Warning: Failed to clean up temp file {temp_path}: {cleanup_error}")
+                logger.warning(f"Failed to clean up temp file {temp_path}: {cleanup_error}", exc_info=True)

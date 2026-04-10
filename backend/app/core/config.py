@@ -19,8 +19,8 @@ class Settings(BaseSettings):
         )
 
     STORAGE_TYPE: str = "local"
-    LOCAL_STORAGE_DIR: str = "/app/storage"
-    TEMP_UPLOAD_DIR: str = "/app/uploads"
+    LOCAL_STORAGE_DIR: str = "./storage"
+    TEMP_UPLOAD_DIR: str = "./uploads"
 
 
     OPENAI_API_KEY: str | None = None

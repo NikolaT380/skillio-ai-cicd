@@ -1,5 +1,7 @@
 -- Enable the pgvector extension for AI similarity search
 CREATE EXTENSION IF NOT EXISTS vector;
+-- Enable pgcrypto for gen_random_uuid() compatibility
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- Users Table (HR / Public Admin)
 CREATE TABLE IF NOT EXISTS users (

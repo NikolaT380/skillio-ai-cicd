@@ -7,7 +7,8 @@ from app.core.security import decode_access_token
 from app.api.models.orm.user import User
 from app.api.models.orm.token_blacklist import TokenBlacklist
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
 
 
 def get_db() -> Session:

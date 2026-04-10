@@ -50,29 +50,56 @@ def create_job(job_in: JobCreate, db: Session = Depends(get_db), current_user: U
         db.rollback()
         raise HTTPException(
             status_code=500, 
-            detail=f"Failed to create job or generate embedding"
+            detail="Failed to create job or generate embedding"
         )
 
 @router.get("/", response_model=List[JobResponse])
-def get_jobs(db: Session = Depends(get_db)):
-    return db.query(Job).all()
+def get_jobs(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Get all jobs created by the current HR Admin.
+    """
+    return db.query(Job).filter(Job.creator_id == current_user.id).all()
 
 @router.get("/{job_id}", response_model=JobResponse)
-def get_job(job_id: UUID4, db: Session = Depends(get_db)):
-    job = db.query(Job).filter(Job.id == job_id).first()
+def get_job(job_id: UUID4, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Get details of a specific job, ensuring the current user is the creator.
+    """
+    job = db.query(Job).filter(Job.id == job_id, Job.creator_id == current_user.id).first()
     if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
+        raise HTTPException(
+            status_code=404, 
+            detail="Job not found or you do not have permission to view it"
+        )
     return job
 
 @router.get("/{job_id}/candidates", response_model=List[CandidateResponse])
 def get_ranked_candidates(
     job_id: UUID4,
     db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
+    """
+    Retrieve and rank all candidates who applied for a specific job.
+
+    This endpoint uses the `pgvector` Cosine Similarity operator to compare
+    the AI-generated embedding of the job description against the embeddings
+    of all candidates' CVs.
+    
+    The results are sorted dynamically by `match_score` (highest first).
+    Candidates scoring above 0.40 are flagged as 'recommended'.
+    Only the HR Admin who created the job can access this data.
+    """
     job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
+
+    # Ownership Check: Only the user who created the job can view its candidates.
+    if job.creator_id != current_user.id:
+        raise HTTPException(
+            status_code=403, 
+            detail="You do not have permission to view candidates for this job"
+        )
 
     if job.embedding is None:
         raise HTTPException(
@@ -83,7 +110,6 @@ def get_ranked_candidates(
     results = rank_candidates_for_job(db, job_id)
 
     # Create a dictionary mapping candidate IDs to their similarity scores
-    # If results is empty (no candidates have embeddings), score_map will simply be an empty dict
     score_map = {row.id: round(float(row.similarity), 4) for row in results if row.similarity is not None}
 
     # Fetch the actual candidate objects from the DB (All candidates for this job)
@@ -95,8 +121,6 @@ def get_ranked_candidates(
     response_list = []
     
     for candidate in candidates:
-        # Get the score from the map, defaulting to 0.0 if they weren't in the ranking results 
-        # (e.g. if their embedding is NULL)
         current_score = score_map.get(candidate.id, 0.0)
         
         response_list.append({
@@ -142,9 +166,12 @@ def delete_job(job_id: UUID4, db: Session = Depends(get_db), current_user: User 
         for candidate in candidates:
             if candidate.cv_url and settings.STORAGE_TYPE == "local":
                 try:
-                    resolved_path = os.path.abspath(candidate.cv_url)
+                    file_path = os.path.join(settings.LOCAL_STORAGE_DIR, candidate.cv_url)
+                    resolved_path = os.path.abspath(file_path)
                     storage_dir = os.path.abspath(settings.LOCAL_STORAGE_DIR)
-                    if resolved_path.startswith(storage_dir) and os.path.exists(resolved_path):
+
+                    if os.path.commonpath([resolved_path, storage_dir]) == storage_dir and os.path.exists(
+                            resolved_path):
                         os.remove(resolved_path)
                 except Exception as fe:
                     logger.warning(f"Failed to delete associated CV file {candidate.cv_url}: {fe}")

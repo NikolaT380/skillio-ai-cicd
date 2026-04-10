@@ -14,6 +14,13 @@ router = APIRouter()
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
+    """
+    Register a new HR Administrator account.
+    
+    This endpoint takes a new user's email, name, and plain-text password,
+    securely hashes the password using bcrypt, and saves the user to the database.
+    To prevent privilege escalation, the role is hardcoded to 'user'.
+    """
     existing = db.query(User).filter(User.email == user_in.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -32,6 +39,13 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """
+    Authenticate an HR Administrator and issue a JWT access token.
+    
+    This endpoint verifies the provided email (username) and password against the
+    database. If successful, it generates a stateless JSON Web Token (JWT) containing
+    the user's unique ID and an expiration timestamp.
+    """
     user = db.query(User).filter(User.email == form_data.username).first()
 
     if not user or not verify_password(form_data.password, user.hashed_password):
@@ -50,6 +64,13 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
 def logout(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """
+    Securely log out the current HR Administrator.
+    
+    Because JWTs are stateless, this endpoint extracts the unique token ID (jti)
+    from the user's active token and saves it to a TokenBlacklist table in the database.
+    Future requests using this specific token will be rejected by the security dependency.
+    """
     payload = decode_access_token(token)
     if payload is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
@@ -68,6 +89,7 @@ def logout(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     if not db.query(TokenBlacklist).filter(TokenBlacklist.jti == jti).first():
         try:
             db.add(TokenBlacklist(jti=jti, expires_at=expires_at))
+            TokenBlacklist.delete_expired(db) # run periodic cleanup of expired tokens
             db.commit()
         except IntegrityError:
             db.rollback()

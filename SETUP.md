@@ -25,10 +25,23 @@ You must configure your local environment variables before starting the project.
     ```bash
     cp .env.example .env
     ```
-3.  Open the newly created `.env` file and **add your OpenAI API Key**:
+3.  Open the newly created `.env` file and configure your API keys and security settings:
+    
+    **A. OpenAI Key**: Add your actual key to enable the AI CV parsing and embedding.
     ```env
-    OPENAI_API_KEY=your_actual_key_here
+    OPENAI_API_KEY=sk-proj-your_actual_key_here
     ```
+    
+    **B. Secret Key**: You must generate a secure, random string for JWT session security. If this is left empty, the application will crash on startup.
+    You can generate a strong key by running this command in your terminal:
+    ```bash
+    python -c "import secrets; print(secrets.token_hex(32))"
+    ```
+    Copy the output and paste it into your `.env` file:
+    ```env
+    SECRET_KEY=your_generated_hex_string_here
+    ```
+    
     *(Note: Leave the PostgreSQL credentials as they are, Docker is configured to match them).*
 
 ---
@@ -50,7 +63,7 @@ We use Docker to run the PostgreSQL database (with `pgvector`) and the complete 
     *   React Frontend: [http://localhost:3000](http://localhost:3000)
 
 **Database Note:** 
-The first time you run `docker-compose up`, Docker will automatically run `database/init.sql` (to build the tables) and `database/seed.sql` (to insert dummy jobs and an Admin user: `admin@gov.local` / `admin123`).
+The first time you run `docker-compose up`, Docker will automatically run `database/init.sql` (to build the tables).
 
 ---
 
