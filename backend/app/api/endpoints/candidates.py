@@ -174,7 +174,7 @@ def get_candidate(
         "education": candidate.education,
         "cv_url": candidate.cv_url,
         "match_score": current_score,
-        "status": "recommended" if current_score > 0.40 else "rejected",
+        "status": candidate.status or ("recommended" if current_score > 0.40 else "rejected"),
         "created_at": candidate.created_at,
     }
 

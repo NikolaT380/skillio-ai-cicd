@@ -22,34 +22,38 @@ import {
   Cell
 } from 'recharts';
 import { useJobs } from '../../hooks/useJobs';
+import { useCandidates } from '../../hooks/useCandidates';
 import StatCard from '../../components/common/StatCard';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 
 const Dashboard: React.FC = () => {
   const { jobs, loading: jobsLoading, fetchJobs } = useJobs();
+  const { candidates, loading: candidatesLoading, fetchAllCandidates } = useCandidates();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      await fetchJobs();
+      await Promise.all([fetchJobs(), fetchAllCandidates()]);
       setLoading(false);
     };
     fetchData();
-  }, [fetchJobs]);
+  }, [fetchJobs, fetchAllCandidates]);
 
-  const totalApplications = 42; 
-  const recommendedCount = 18;
-  const avgMatchScore = 0.68;
+  const totalApplications = candidates.length;
+  const recommendedCount = candidates.filter(c => c.status === 'recommended').length;
+  const avgMatchScore = candidates.length > 0 
+    ? candidates.reduce((acc, c) => acc + c.match_score, 0) / candidates.length 
+    : 0;
   const activeJobs = jobs.length;
 
-  const chartData = jobs.slice(0, 6).map((job, idx) => ({
+  const chartData = jobs.slice(0, 6).map((job) => ({
     name: job.title.split(' ')[0],
     fullName: job.title,
-    applications: [12, 8, 15, 4, 3, 7][idx % 6]
+    applications: candidates.filter(c => c.job_id === job.id).length
   }));
 
-  if (loading || jobsLoading) {
+  if (loading || jobsLoading || candidatesLoading) {
     return (
       <div className="space-y-10 animate-pulse">
         <div className="h-8 w-64 bg-gray-200 rounded-lg mb-10"></div>
@@ -63,6 +67,10 @@ const Dashboard: React.FC = () => {
       </div>
     );
   }
+
+  const recentCandidates = [...candidates]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 5);
 
   return (
     <div className="space-y-10">
@@ -82,13 +90,11 @@ const Dashboard: React.FC = () => {
           title="Total Candidates" 
           value={totalApplications} 
           icon={Users} 
-          trend={{ value: '+12%', isPositive: true }}
         />
         <StatCard 
-          title="Strong Matches" 
+          title="Shortlisted" 
           value={recommendedCount} 
           icon={CheckCircle2} 
-          trend={{ value: '42%', isPositive: true }}
         />
         <StatCard 
           title="Avg. Match Score" 
@@ -151,33 +157,36 @@ const Dashboard: React.FC = () => {
             </Link>
           </div>
           <div className="space-y-4 flex-1">
-            {jobs.slice(0, 4).map((job, idx) => (
-              <motion.div 
-                key={job.id} 
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                className="group cursor-pointer p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="min-w-0">
-                    <p className="font-bold truncate group-hover:text-accent transition-colors">{job.title}</p>
-                    <p className="text-xs text-white/40 mt-1">{job.location} • {idx + 3} applicants</p>
+            {jobs.slice(0, 4).map((job, idx) => {
+              const appCount = candidates.filter(c => c.job_id === job.id).length;
+              return (
+                <motion.div 
+                  key={job.id} 
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="group cursor-pointer p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="min-w-0">
+                      <p className="font-bold truncate group-hover:text-accent transition-colors">{job.title}</p>
+                      <p className="text-xs text-white/40 mt-1">{job.location} • {appCount} applicants</p>
+                    </div>
+                    <ChevronRight size={18} className="text-white/20 group-hover:text-white group-hover:translate-x-1 transition-all" />
                   </div>
-                  <ChevronRight size={18} className="text-white/20 group-hover:text-white group-hover:translate-x-1 transition-all" />
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
           <div className="mt-8 pt-8 border-t border-white/5">
              <div className="flex items-center justify-between text-xs font-bold text-white/40 uppercase tracking-widest">
                <span>Capacity utilization</span>
-               <span className="text-white">82%</span>
+               <span className="text-white">{jobs.length > 0 ? 'High' : 'Low'}</span>
              </div>
              <div className="w-full h-2 bg-white/10 rounded-full mt-3 overflow-hidden">
                <motion.div 
                 initial={{ width: 0 }}
-                animate={{ width: '82%' }}
+                animate={{ width: jobs.length > 0 ? '82%' : '10%' }}
                 transition={{ duration: 1.5, ease: "easeOut" }}
                 className="h-full bg-accent shadow-[0_0_15px_rgba(46,117,182,0.5)]"
                ></motion.div>
@@ -208,63 +217,78 @@ const Dashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {[
-                { name: 'Sarah Connor', email: 's.connor@sky.net', job: 'Policy Analyst', score: 0.88, status: 'Recommended', time: Date.now() - 1000*60*45 },
-                { name: 'Arthur Dent', email: 'arthur@hitchhiker.io', job: 'Communications Lead', score: 0.54, status: 'Pending', time: Date.now() - 1000*60*120 },
-                { name: 'Ellen Ripley', email: 'ripley@nostromo.com', job: 'Security Officer', score: 0.94, status: 'Recommended', time: Date.now() - 1000*60*60*5 },
-                { name: 'Rick Sanchez', email: 'rick@c137.gl', job: 'Lead Researcher', score: 0.32, status: 'Rejected', time: Date.now() - 1000*60*60*24 },
-              ].map((c, i) => (
-                <tr key={i} className="group hover:bg-background-alt transition-colors">
-                  <td className="px-8 py-6">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center font-black text-primary text-sm shadow-sm group-hover:bg-accent group-hover:text-white transition-colors">
-                        {c.name.charAt(0)}
+              {recentCandidates.map((c, i) => {
+                const job = jobs.find(j => j.id === c.job_id);
+                return (
+                  <tr key={c.id} className="group hover:bg-background-alt transition-colors">
+                    <td className="px-8 py-6">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center font-black text-primary text-sm shadow-sm group-hover:bg-accent group-hover:text-white transition-colors">
+                          {c.full_name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="font-bold text-primary">{c.full_name}</p>
+                          <p className="text-xs text-gray-400 font-medium">{c.email}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-bold text-primary">{c.name}</p>
-                        <p className="text-xs text-gray-400 font-medium">{c.email}</p>
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className="font-bold text-gray-600 truncate inline-block max-w-[200px]">{job?.title || 'Unknown Job'}</span>
+                      <p className="text-[10px] font-black text-gray-300 uppercase mt-1">Applied {formatDistanceToNow(new Date(c.created_at))} ago</p>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${c.match_score * 100}%` }}
+                            transition={{ duration: 1, delay: i * 0.1 }}
+                            className={`h-full ${c.match_score > 0.6 ? 'bg-success' : c.match_score > 0.4 ? 'bg-warning' : 'bg-error'}`}
+                          />
+                        </div>
+                        <span className="text-sm font-black text-primary">{(c.match_score * 100).toFixed(0)}%</span>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <span className="font-bold text-gray-600">{c.job}</span>
-                    <p className="text-[10px] font-black text-gray-300 uppercase mt-1">Applied {formatDistanceToNow(c.time)} ago</p>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <motion.div 
-                          initial={{ width: 0 }}
-                          animate={{ width: `${c.score * 100}%` }}
-                          transition={{ duration: 1, delay: i * 0.1 }}
-                          className={`h-full ${c.score > 0.6 ? 'bg-success' : c.score > 0.4 ? 'bg-warning' : 'bg-error'}`}
-                        />
-                      </div>
-                      <span className="text-sm font-black text-primary">{(c.score * 100).toFixed(0)}%</span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <span className={`
-                      badge ${c.status === 'Recommended' ? 'bg-success/10 text-success' : c.status === 'Rejected' ? 'bg-error/10 text-error' : 'bg-warning/10 text-warning'}
-                    `}>
-                      {c.status === 'Recommended' && <CheckCircle2 size={12} />}
-                      {c.status === 'Rejected' && <XCircle size={12} />}
-                      {c.status === 'Pending' && <Clock size={12} />}
-                      <span>{c.status}</span>
-                    </span>
-                  </td>
-                  <td className="px-8 py-6 text-right">
-                    <button className="p-2 text-gray-400 hover:text-accent hover:bg-accent/5 rounded-xl transition-all">
-                      <Eye size={20} />
-                    </button>
-                    <button className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all ml-1">
-                      <Trash2 size={20} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className={`
+                        badge ${
+                          c.status === 'recommended' ? 'bg-success/10 text-success' : 
+                          c.status === 'rejected' ? 'bg-error/10 text-error' : 
+                          c.status === 'under_review' ? 'bg-warning/10 text-warning' :
+                          'bg-blue-50 text-blue-600'
+                        }
+                      `}>
+                        {c.status === 'recommended' && <CheckCircle2 size={12} />}
+                        {c.status === 'rejected' && <XCircle size={12} />}
+                        {c.status === 'under_review' && <Briefcase size={12} />}
+                        {c.status === 'submitted' && <Clock size={12} />}
+                        <span>{c.status.replace('_', ' ').charAt(0).toUpperCase() + c.status.replace('_', ' ').slice(1)}</span>
+                      </span>
+                    </td>
+                    <td className="px-8 py-6 text-right">
+                      <Link 
+                        to={`/dashboard/candidates/${c.id}`}
+                        className="p-2 text-gray-400 hover:text-accent hover:bg-accent/5 rounded-xl transition-all inline-block"
+                      >
+                        <Eye size={20} />
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
+          {recentCandidates.length === 0 && (
+            <div className="text-center py-20">
+               <Users className="mx-auto text-gray-200 mb-4" size={48} />
+               <p className="text-gray-400 font-bold">No applications received yet.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
         </div>
       </div>
     </div>

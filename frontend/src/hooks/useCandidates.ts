@@ -45,5 +45,17 @@ export const useCandidates = () => {
     }
   };
 
-  return { candidates, loading, fetchJobCandidates, uploadCV, deleteCandidate };
+  const fetchAllCandidates = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await candidateService.getAllCandidates();
+      setCandidates(data);
+    } catch (error) {
+      toast.error('Failed to fetch candidates');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { candidates, loading, fetchJobCandidates, fetchAllCandidates, uploadCV, deleteCandidate };
 };

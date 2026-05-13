@@ -12,12 +12,14 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useJobs } from '../../hooks/useJobs';
+import { useAuth } from '../../hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
 import type { Job, JobCreate } from '../../types';
 
 const JobsManagementPage: React.FC = () => {
+  const { user } = useAuth();
   const { jobs, fetchJobs, createJob, updateJob, deleteJob } = useJobs();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
@@ -29,13 +31,19 @@ const JobsManagementPage: React.FC = () => {
     description: '',
     requirements: '',
     mandatory_criteria: '',
-    company_name: 'Skillio AI Admin',
+    company_name: user?.full_name || 'Skillio AI Admin',
     location: ''
   });
 
   useEffect(() => {
     fetchJobs();
   }, [fetchJobs]);
+
+  useEffect(() => {
+    if (user) {
+      setNewJob(prev => ({ ...prev, company_name: user.full_name }));
+    }
+  }, [user]);
 
   const handleCreateJob = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +67,14 @@ const JobsManagementPage: React.FC = () => {
     const success = await createJob(jobToCreate);
     if (success) {
       setIsModalOpen(false);
-      setNewJob({ title: '', description: '', requirements: '', mandatory_criteria: '', company_name: 'Skillio AI Admin', location: '' });
+      setNewJob({ 
+        title: '', 
+        description: '', 
+        requirements: '', 
+        mandatory_criteria: '', 
+        company_name: user?.full_name || 'Skillio AI Admin', 
+        location: '' 
+      });
     }
   };
 
