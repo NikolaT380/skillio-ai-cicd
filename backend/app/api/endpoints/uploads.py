@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Form
 from sqlalchemy.orm import Session
+from typing import Optional
 import os
 import logging
 import shutil
@@ -21,6 +22,9 @@ router = APIRouter()
 def upload_cv(
     job_id: str = Form(..., description="The UUID of the job this CV is for"),
     file: UploadFile = File(...), 
+    full_name: Optional[str] = Form(None),
+    email: Optional[str] = Form(None),
+    phone: Optional[str] = Form(None),
     db: Session = Depends(get_db)
 ):
     """
@@ -96,13 +100,13 @@ def upload_cv(
 
         candidate = Candidate(
             job_id=job_uuid,
-            full_name=validated_data.full_name,
-            email=validated_data.email,
-            phone=validated_data.phone,
+            full_name=full_name or validated_data.full_name,
+            email=email or validated_data.email,
+            phone=phone or validated_data.phone,
             skills=validated_data.skills,
             experience_years=exp_years,
             education=validated_data.education,
-            cv_url=unique_name, # relative path - meaning if we migrate to cloud storage (like AWS S3) in the future, our database records will still be valid. It will construct the full URL
+            cv_url=unique_name,
             raw_text=extracted_text,
             embedding=embedding
         )
@@ -121,7 +125,7 @@ def upload_cv(
         raise
     except Exception as e:
         db.rollback()
-        # If the file was moved but something failed right after, attefmpt to delete the permanent file
+        # If the file was moved but something failed right after, attempt to delete the permanent file
         try:
             if 'permanent_path' in locals() and os.path.exists(permanent_path):
                 os.remove(permanent_path)

@@ -2,7 +2,7 @@ import os
 import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.api.deps import get_db, get_current_user
+from app.api.deps import get_db, get_current_user, get_current_user_optional
 from app.api.models.orm.job import Job
 from app.api.models.orm.user import User
 from app.services.embedding_service import generate_embedding
@@ -54,11 +54,15 @@ def create_job(job_in: JobCreate, db: Session = Depends(get_db), current_user: U
         )
 
 @router.get("/", response_model=List[JobResponse])
-def get_jobs(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_jobs(
+    db: Session = Depends(get_db), 
+    current_user: User | None = Depends(get_current_user_optional)
+):
     """
-    Get all jobs created by the current HR Admin.
+    Get all jobs. If an HR Admin is logged in, this still returns all jobs, 
+    but we could easily filter by creator_id if a 'mine' query param was added.
     """
-    return db.query(Job).filter(Job.creator_id == current_user.id).all()
+    return db.query(Job).all()
 
 @router.patch("/{job_id}", response_model=JobResponse)
 def update_job(job_id: UUID4, job_in: JobUpdate, db: Session = Depends(get_db)):
@@ -82,15 +86,15 @@ def update_job(job_id: UUID4, job_in: JobUpdate, db: Session = Depends(get_db)):
 def match_candidates(job_id: UUID4, db: Session = Depends(get_db)):
     job = db.query(Job).filter(Job.id == job_id).first()
 @router.get("/{job_id}", response_model=JobResponse)
-def get_job(job_id: UUID4, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_job(job_id: UUID4, db: Session = Depends(get_db)):
     """
-    Get details of a specific job, ensuring the current user is the creator.
+    Get details of a specific job. Publicly accessible.
     """
-    job = db.query(Job).filter(Job.id == job_id, Job.creator_id == current_user.id).first()
+    job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
         raise HTTPException(
             status_code=404, 
-            detail="Job not found or you do not have permission to view it"
+            detail="Job not found"
         )
     return job
 

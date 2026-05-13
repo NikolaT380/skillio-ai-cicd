@@ -1,6 +1,7 @@
 import os
 import logging
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from pydantic import UUID4
@@ -35,45 +36,114 @@ def get_candidates(
     """
     Retrieve a list of candidates. 
     Can be filtered by job_id. Only returns candidates for jobs created by the current user.
-    If job_id is provided, candidates are returned with dynamically calculated match scores and statuses.
+    Always returns candidates with dynamically calculated match scores relative to their job.
     """
-    query = db.query(Candidate).join(Job).filter(Job.creator_id == current_user.id)
-
     if job_id:
-        query = query.filter(Candidate.job_id == job_id)
+        query = db.query(Candidate).join(Job).filter(
+            Job.creator_id == current_user.id,
+            Candidate.job_id == job_id
+        )
         candidates = query.all()
-
         if not candidates:
             return []
-
-        # If filtered by job_id, dynamically compute similarity scores so the API response isn't misleading
+            
         results = rank_candidates_for_job(db, job_id)
         score_map = {row.id: round(float(row.similarity), 4) for row in results if row.similarity is not None}
+    else:
+        # Calculate scores for all candidates relative to their respective jobs
+        # using a raw SQL join for efficiency with pgvector
+        query_sql = text("""
+            SELECT c.id, 
+                   1 - (c.embedding <=> j.embedding) AS similarity
+            FROM candidates c
+            JOIN jobs j ON c.job_id = j.id
+            WHERE j.creator_id = :user_id
+              AND c.embedding IS NOT NULL
+              AND j.embedding IS NOT NULL
+        """)
+        results = db.execute(query_sql, {"user_id": current_user.id}).fetchall()
+        score_map = {row.id: round(float(row.similarity), 4) for row in results if row.similarity is not None}
+        
+        candidates = db.query(Candidate).join(Job).filter(Job.creator_id == current_user.id).all()
 
-        response_list = []
-        for c in candidates:
-            current_score = score_map.get(c.id, 0.0)
-            response_list.append({
-                "id": c.id,
-                "job_id": c.job_id,
-                "full_name": c.full_name,
-                "email": c.email,
-                "phone": c.phone,
-                "skills": c.skills or [],
-                "experience_years": c.experience_years,
-                "education": c.education,
-                "cv_url": c.cv_url,
-                "match_score": current_score,
-                "status": "recommended" if current_score > 0.40 else "rejected",
-                "created_at": c.created_at,
-            })
+    response_list = []
+    for c in candidates:
+        current_score = score_map.get(c.id, 0.0)
+        response_list.append({
+            "id": c.id,
+            "job_id": c.job_id,
+            "full_name": c.full_name,
+            "email": c.email,
+            "phone": c.phone,
+            "skills": c.skills or [],
+            "experience_years": c.experience_years,
+            "education": c.education,
+            "cv_url": c.cv_url,
+            "match_score": current_score,
+            "status": c.status or ("recommended" if current_score > 0.40 else "rejected"),
+            "created_at": c.created_at,
+        })
+    # Sort the final list by match_score before returning
+    response_list.sort(key=lambda x: x["match_score"], reverse=True)
+    return response_list
 
-        # Sort the final list by match_score before returning
-        response_list.sort(key=lambda x: x["match_score"], reverse=True)
-        return response_list
 
-    # If no job_id is provided, just return raw DB objects (match_score=0.0, status=None)
-    return query.all()
+@router.get("/status/")
+def get_candidate_status_by_email(
+    email: str = Query(..., description="Email address used when applying"),
+    db: Session = Depends(get_db)
+):
+    """
+    Public endpoint — no auth required.
+    Returns the most recent application status for the given email.
+    """
+    candidate = (
+        db.query(Candidate)
+        .filter(Candidate.email == email)
+        .order_by(Candidate.created_at.desc())
+        .first()
+    )
+    if not candidate:
+        raise HTTPException(status_code=404, detail="No application found for this email")
+
+    job = db.query(Job).filter(Job.id == candidate.job_id).first()
+    
+    return {
+        "id": str(candidate.id),
+        "full_name": candidate.full_name,
+        "email": candidate.email,
+        "job_title": job.title if job else "Unknown Position",
+        "status": candidate.status or "submitted",
+        "created_at": candidate.created_at,
+    }
+
+
+@router.patch("/{candidate_id}/status/")
+def update_candidate_status(
+    candidate_id: UUID4,
+    status_update: dict, # simple dict for now: {"status": "recommended"}
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Update the status of a candidate. 
+    Only the owner of the job can update the candidate's status.
+    """
+    candidate = db.query(Candidate).join(Job).filter(
+        Candidate.id == candidate_id,
+        Job.creator_id == current_user.id
+    ).first()
+
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found or you don't have permission")
+
+    new_status = status_update.get("status")
+    if not new_status:
+        raise HTTPException(status_code=400, detail="Missing 'status' in request body")
+
+    candidate.status = new_status
+    db.commit()
+    return {"message": "Status updated successfully", "status": new_status}
 
 
 @router.get("/{candidate_id}", response_model=CandidateResponse)

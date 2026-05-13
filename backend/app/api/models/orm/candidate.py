@@ -20,4 +20,5 @@ class Candidate(Base):
     raw_text = Column(Text)
     embedding = Column(Vector(1536))
     match_score = Column(Float, default=0.0)
+    status = Column(String, default="submitted") # submitted, under_review, recommended, rejected
     created_at = Column(DateTime(timezone=True), server_default=func.now())

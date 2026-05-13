@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from app.api.deps import get_db, oauth2_scheme
+from app.api.deps import get_db, oauth2_scheme, get_current_user
 from app.api.models.orm.user import User
 from app.api.models.orm.token_blacklist import TokenBlacklist
 from app.schemas.user import UserCreate, UserResponse
@@ -95,3 +95,11 @@ def logout(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
             db.rollback()
 
     return {"message": "Successfully logged out"}
+
+
+@router.get("/me", response_model=UserResponse)
+def get_me(current_user: User = Depends(get_current_user)):
+    """
+    Retrieve the current logged-in HR Administrator's profile.
+    """
+    return current_user
