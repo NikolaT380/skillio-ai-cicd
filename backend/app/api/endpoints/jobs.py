@@ -6,7 +6,7 @@ from app.api.deps import get_db, get_current_user, get_current_user_optional
 from app.api.models.orm.job import Job
 from app.api.models.orm.user import User
 from app.services.embedding_service import generate_embedding
-from app.services.similarity_service import find_similarity, rank_candidates_for_job
+from app.services.similarity_service import rank_candidates_for_job
 from app.schemas.job import JobCreate, JobUpdate, JobResponse
 from app.schemas.candidate import CandidateResponse
 from typing import List
@@ -82,9 +82,6 @@ def update_job(job_id: UUID4, job_in: JobUpdate, db: Session = Depends(get_db)):
     db.refresh(job)
     return job
 
-@router.get("/{job_id}/match")
-def match_candidates(job_id: UUID4, db: Session = Depends(get_db)):
-    job = db.query(Job).filter(Job.id == job_id).first()
 @router.get("/{job_id}", response_model=JobResponse)
 def get_job(job_id: UUID4, db: Session = Depends(get_db)):
     """
@@ -159,7 +156,7 @@ def get_ranked_candidates(
             "education": candidate.education,
             "cv_url": candidate.cv_url,
             "match_score": current_score,
-            "status": "recommended" if current_score > 0.40 else "rejected",
+            "status": candidate.status or ("recommended" if current_score > 0.40 else "rejected"),
             "created_at": candidate.created_at,
         })
 

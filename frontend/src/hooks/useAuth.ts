@@ -10,7 +10,7 @@ export const useAuth = () => {
   const navigate = useNavigate();
   const { setUser, setToken, logout: contextLogout, user, isAuthenticated } = useAuthContext();
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, redirectTo: string = '/dashboard') => {
     setLoading(true);
     try {
       const response = await authService.login(email, password);
@@ -21,7 +21,7 @@ export const useAuth = () => {
       setUser(userData);
       
       toast.success('Welcome back!');
-      navigate('/dashboard');
+      navigate(redirectTo, { replace: true });
     } catch (error) {
       toast.error('Invalid email or password');
     } finally {

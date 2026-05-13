@@ -7,7 +7,8 @@ import {
   Loader2,
   Users,
   CheckCircle2,
-  Clock
+  Clock,
+  Briefcase
 } from 'lucide-react';
 import { useJobs } from '../../hooks/useJobs';
 import { useCandidates } from '../../hooks/useCandidates';
