@@ -72,7 +72,6 @@ export interface Candidate {
   match_score: number;
   created_at: string;
   status: 'submitted' | 'under_review' | 'recommended' | 'rejected';
-  raw_text?: string;
 }
 
 export interface CandidateStatusResponse {

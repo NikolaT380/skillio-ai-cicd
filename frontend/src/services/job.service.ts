@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance';
-import type { Job, JobCreate, Candidate } from '../types';
+import type { Job, JobCreate, JobUpdate, Candidate } from '../types';
 
 export const jobService = {
   getJobs: async (): Promise<Job[]> => {
@@ -14,6 +14,11 @@ export const jobService = {
 
   createJob: async (jobData: JobCreate): Promise<Job> => {
     const response = await axiosInstance.post<Job>('/jobs/', jobData);
+    return response.data;
+  },
+
+  updateJob: async (id: string, jobData: JobUpdate): Promise<Job> => {
+    const response = await axiosInstance.patch<Job>(`/jobs/${id}`, jobData);
     return response.data;
   },
 

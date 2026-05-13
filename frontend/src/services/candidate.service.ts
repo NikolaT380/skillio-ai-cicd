@@ -20,20 +20,13 @@ export const candidateService = {
     return response.data;
   },
 
-  getCandidates: async (jobId?: string): Promise<Candidate[]> => {
-    const response = await axiosInstance.get<Candidate[]>('/candidates/', {
-      params: jobId ? { job_id: jobId } : {},
-    });
-    return response.data;
-  },
-
   getCandidate: async (id: string): Promise<Candidate> => {
-    const response = await axiosInstance.get<Candidate>(`/candidates/${id}/`);
+    const response = await axiosInstance.get<Candidate>(`/candidates/${id}`);
     return response.data;
   },
 
   deleteCandidate: async (id: string): Promise<void> => {
-    await axiosInstance.delete(`/candidates/${id}/`);
+    await axiosInstance.delete(`/candidates/${id}`);
   },
 
   getCandidateStatus: async (email: string): Promise<CandidateStatusResponse> => {

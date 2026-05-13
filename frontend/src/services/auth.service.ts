@@ -17,13 +17,13 @@ export const authService = {
   },
 
   register: async (userData: UserCreate): Promise<User> => {
-    const response = await axiosInstance.post<User>('/auth/register/', userData);
+    const response = await axiosInstance.post<User>('/auth/register', userData);
     return response.data;
   },
 
   logout: async () => {
     try {
-      await axiosInstance.post('/auth/logout/');
+      await axiosInstance.post('/auth/logout');
     } catch (error) {
       console.warn('Backend logout failed or token already cleared:', error);
     } finally {

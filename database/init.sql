@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS candidates (
     raw_text TEXT,
     embedding vector(1536),
     match_score FLOAT DEFAULT 0.0,
+    status VARCHAR(50) DEFAULT 'submitted',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

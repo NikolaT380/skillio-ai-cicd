@@ -247,12 +247,6 @@ const CandidateProfile: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-12">
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">CV Text Analysis (Raw Extraction)</h4>
-              <div className="p-4 bg-gray-50 rounded-lg max-h-64 overflow-y-auto text-sm text-gray-600 font-mono whitespace-pre-wrap leading-relaxed">
-                {candidate.raw_text || 'Raw text data is not available for this candidate.'}
-              </div>
-            </div>
           </div>
         </div>
       </div>

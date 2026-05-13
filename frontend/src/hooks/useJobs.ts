@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { jobService } from '../services/api';
-import type { Job, JobCreate } from '../types';
+import type { Job, JobCreate, JobUpdate } from '../types';
 import toast from 'react-hot-toast';
 
 export const useJobs = () => {
@@ -40,6 +40,18 @@ export const useJobs = () => {
     }
   }, []);
 
+  const updateJob = useCallback(async (id: string, jobData: JobUpdate) => {
+    try {
+      const updated = await jobService.updateJob(id, jobData);
+      setJobs(prev => prev.map(job => job.id === id ? updated : job));
+      toast.success('Job updated successfully');
+      return updated;
+    } catch (error) {
+      toast.error('Failed to update job');
+      return null;
+    }
+  }, []);
+
   const deleteJob = useCallback(async (id: string) => {
     try {
       await jobService.deleteJob(id);
@@ -52,5 +64,5 @@ export const useJobs = () => {
     }
   }, []);
 
-  return { jobs, loading, fetchJobs, getJob, createJob, deleteJob };
+  return { jobs, loading, fetchJobs, getJob, createJob, updateJob, deleteJob };
 };

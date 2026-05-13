@@ -65,15 +65,22 @@ def get_jobs(
     return db.query(Job).all()
 
 @router.patch("/{job_id}", response_model=JobResponse)
-def update_job(job_id: UUID4, job_in: JobUpdate, db: Session = Depends(get_db)):
+def update_job(job_id: UUID4, job_in: JobUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
+    if job.creator_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You do not have permission to update this job")
+
     update_data = job_in.model_dump(exclude_unset=True)
 
-    if "description" in update_data:
-        update_data["embedding"] = generate_embedding(update_data["description"])
+    if "description" in update_data or "title" in update_data or "requirements" in update_data:
+        title = update_data.get("title", job.title)
+        description = update_data.get("description", job.description)
+        requirements = update_data.get("requirements", job.requirements or [])
+        embedding_content = f"{title}\n\n{description}\n\nRequirements: {', '.join(requirements)}"
+        update_data["embedding"] = generate_embedding(embedding_content)
 
     for field, value in update_data.items():
         setattr(job, field, value)
