@@ -7,7 +7,6 @@ import {
   CheckCircle2, 
   ChevronRight,
   Eye,
-  Trash2,
   Clock,
   ExternalLink
 } from 'lucide-react';
@@ -167,13 +166,13 @@ const Dashboard: React.FC = () => {
                   transition={{ delay: idx * 0.1 }}
                   className="group cursor-pointer p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
                 >
-                  <div className="flex justify-between items-start">
+                  <Link to={`/dashboard/jobs/${job.id}/candidates`} className="flex justify-between items-start">
                     <div className="min-w-0">
                       <p className="font-bold truncate group-hover:text-accent transition-colors">{job.title}</p>
                       <p className="text-xs text-white/40 mt-1">{job.location} • {appCount} applicants</p>
                     </div>
                     <ChevronRight size={18} className="text-white/20 group-hover:text-white group-hover:translate-x-1 transition-all" />
-                  </div>
+                  </Link>
                 </motion.div>
               );
             })}
@@ -284,11 +283,6 @@ const Dashboard: React.FC = () => {
                <p className="text-gray-400 font-bold">No applications received yet.</p>
             </div>
           )}
-        </div>
-      </div>
-    </div>
-  );
-};
         </div>
       </div>
     </div>
