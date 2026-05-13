@@ -17,6 +17,15 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
+@router.get("/{job_id}/candidates", response_model=List[CandidateResponse])
+def get_candidates_for_job(job_id: UUID4, db: Session = Depends(get_db)):
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    return db.query(Candidate).filter(Candidate.job_id == job_id).all()
+  
+
 @router.get("/", response_model=List[CandidateResponse])
 def get_candidates(
     job_id: Optional[UUID4] = Query(None, description="Filter candidates by a specific job ID"),

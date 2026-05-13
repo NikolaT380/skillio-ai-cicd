@@ -6,8 +6,8 @@ from app.api.deps import get_db, get_current_user
 from app.api.models.orm.job import Job
 from app.api.models.orm.user import User
 from app.services.embedding_service import generate_embedding
-from app.services.similarity_service import rank_candidates_for_job
-from app.schemas.job import JobCreate, JobResponse
+from app.services.similarity_service import find_similarity, rank_candidates_for_job
+from app.schemas.job import JobCreate, JobUpdate, JobResponse
 from app.schemas.candidate import CandidateResponse
 from typing import List
 from pydantic import UUID4
@@ -60,6 +60,27 @@ def get_jobs(db: Session = Depends(get_db), current_user: User = Depends(get_cur
     """
     return db.query(Job).filter(Job.creator_id == current_user.id).all()
 
+@router.patch("/{job_id}", response_model=JobResponse)
+def update_job(job_id: UUID4, job_in: JobUpdate, db: Session = Depends(get_db)):
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    update_data = job_in.model_dump(exclude_unset=True)
+
+    if "description" in update_data:
+        update_data["embedding"] = generate_embedding(update_data["description"])
+
+    for field, value in update_data.items():
+        setattr(job, field, value)
+
+    db.commit()
+    db.refresh(job)
+    return job
+
+@router.get("/{job_id}/match")
+def match_candidates(job_id: UUID4, db: Session = Depends(get_db)):
+    job = db.query(Job).filter(Job.id == job_id).first()
 @router.get("/{job_id}", response_model=JobResponse)
 def get_job(job_id: UUID4, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
