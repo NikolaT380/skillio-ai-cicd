@@ -89,6 +89,14 @@ def upload_cv(
         # Extract structured data using OpenAI
         raw_candidate_data = extract_candidate_data(extracted_text)
 
+        # Form-provided fields take priority; fill gaps left by the AI
+        if full_name:
+            raw_candidate_data['full_name'] = full_name
+        if email:
+            raw_candidate_data['email'] = email
+        if phone:
+            raw_candidate_data['phone'] = phone
+
         # Validate and coerce the AI output using Pydantic
         validated_data = CandidateExtract(**raw_candidate_data)
 

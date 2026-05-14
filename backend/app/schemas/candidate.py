@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import List, Optional
 from pydantic import UUID4
 from datetime import datetime
@@ -7,12 +7,32 @@ from datetime import datetime
 
 class CandidateExtract(BaseModel):
     """Schema for validating data extracted by the AI service."""
-    full_name: str = Field(default="Unknown")
-    email: EmailStr | str = Field(default="unknown@example.com")
+    full_name: Optional[str] = Field(default="Unknown")
+    email: Optional[str] = Field(default="unknown@example.com")
     phone: Optional[str] = None
     skills: List[str] = Field(default_factory=list)
     experience_total_months: int = 0
     education: Optional[str] = None
+
+    @field_validator('full_name', mode='before')
+    @classmethod
+    def default_full_name(cls, v):
+        return v if isinstance(v, str) and v.strip() else "Unknown"
+
+    @field_validator('email', mode='before')
+    @classmethod
+    def default_email(cls, v):
+        return v if isinstance(v, str) and v.strip() else "unknown@example.com"
+
+    @field_validator('skills', mode='before')
+    @classmethod
+    def default_skills(cls, v):
+        return v if isinstance(v, list) else []
+
+    @field_validator('experience_total_months', mode='before')
+    @classmethod
+    def default_experience(cls, v):
+        return v if isinstance(v, int) else 0
 
 class CandidateResponse(BaseModel): # represents a parsed candidate profile linked to a specific job
     id: UUID4
