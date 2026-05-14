@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/geist-sans": "^5.2.5",
+    "@fontsource/instrument-serif": "^5.2.8",
     "@tailwindcss/postcss": "^4.2.2",
     "axios": "^1.15.0",
     "clsx": "^2.1.1",

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Loader2, Lock, Mail, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../hooks/useAuth';
+import { motion } from 'framer-motion';
 
 const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -27,70 +28,89 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 bg-background-alt">
-      <div className="max-w-md w-full">
-        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-primary">Create HR Admin Account</h1>
-            <p className="text-gray-500 mt-2">Join Skillio AI to manage your recruitment</p>
+    <div className="min-h-[85vh] flex items-center justify-center px-4 bg-bg-admin relative overflow-hidden">
+      {/* Decorative Gradients */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-400/5 rounded-full blur-3xl -mr-64 -mt-64"></div>
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-navy-900/5 rounded-full blur-3xl -ml-64 -mb-64"></div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-md w-full relative z-10 py-12"
+      >
+        <div className="bg-white p-10 md:p-12 rounded-[2.5rem] shadow-warm border border-border">
+          <div className="text-center mb-10">
+            <div className="w-16 h-16 bg-blue-600/10 rounded-2xl flex items-center justify-center text-blue-600 mx-auto mb-6 shadow-sm">
+              <User size={32} />
+            </div>
+            <h1 className="text-3xl font-serif italic text-navy-900">Create HR Account</h1>
+            <p className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em] mt-3">Join the Intelligence Network</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Full Name</label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <label className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em] ml-1">Full Name</label>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-admin-secondary group-focus-within:text-blue-600 transition-colors">
+                  <User size={18} />
+                </div>
                 <input
                   required
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-border rounded-xl outline-none focus:bg-white focus:ring-4 focus:ring-blue-400/5 focus:border-blue-400/40 transition-all font-medium text-sm text-navy-900 placeholder:text-text-admin-secondary/30"
                   placeholder="John Doe"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <label className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em] ml-1">Email Address</label>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-admin-secondary group-focus-within:text-blue-600 transition-colors">
+                  <Mail size={18} />
+                </div>
                 <input
                   required
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-border rounded-xl outline-none focus:bg-white focus:ring-4 focus:ring-blue-400/5 focus:border-blue-400/40 transition-all font-medium text-sm text-navy-900 placeholder:text-text-admin-secondary/30"
                   placeholder="admin@skillio.ai"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <label className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em] ml-1">Access Password</label>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-admin-secondary group-focus-within:text-blue-600 transition-colors">
+                  <Lock size={18} />
+                </div>
                 <input
                   required
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-border rounded-xl outline-none focus:bg-white focus:ring-4 focus:ring-blue-400/5 focus:border-blue-400/40 transition-all font-medium text-sm text-navy-900 placeholder:text-text-admin-secondary/30"
                   placeholder="••••••••"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Confirm Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <label className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em] ml-1">Confirm Password</label>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-admin-secondary group-focus-within:text-blue-600 transition-colors">
+                  <Lock size={18} />
+                </div>
                 <input
                   required
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-border rounded-xl outline-none focus:bg-white focus:ring-4 focus:ring-blue-400/5 focus:border-blue-400/40 transition-all font-medium text-sm text-navy-900 placeholder:text-text-admin-secondary/30"
                   placeholder="••••••••"
                 />
               </div>
@@ -99,22 +119,22 @@ const RegisterPage: React.FC = () => {
             <button
               disabled={loading}
               type="submit"
-              className="w-full bg-primary text-white py-2 rounded-md font-bold hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center justify-center mt-4"
+              className="w-full btn-primary py-5 text-sm font-black uppercase tracking-widest flex items-center justify-center disabled:opacity-50 mt-4"
             >
-              {loading ? <Loader2 className="animate-spin mr-2" size={20} /> : 'Create Account'}
+              {loading ? <Loader2 className="animate-spin mr-3" size={20} /> : 'Create Administrator Account'}
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-            <p className="text-sm text-gray-500">
+          <div className="mt-10 pt-8 border-t border-slate-100 text-center">
+            <p className="text-xs font-semibold text-text-admin-secondary">
               Already have an account?{' '}
-              <Link to="/login" className="text-primary font-bold hover:underline">
-                Login here
+              <Link to="/login" className="text-blue-600 font-black uppercase tracking-widest hover:underline ml-1">
+                Login
               </Link>
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

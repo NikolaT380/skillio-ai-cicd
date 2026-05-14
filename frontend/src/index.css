@@ -1,48 +1,113 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "@fontsource/instrument-serif/index.css";
+@import "@fontsource/geist-sans/index.css";
 
 @theme {
-  --color-primary: #1E3A5F;
-  --color-accent: #2E75B6;
-  --color-background: #FFFFFF;
-  --color-background-alt: #F4F6F9;
+  /* Color System - Lightened for premium SaaS feel */
+  --color-navy-900: #0D1B2A;
+  --color-navy-700: #1E3A5F;
+  --color-blue-400: #4A90D9;
   
-  --color-success: #2E7D32;
-  --color-warning: #E65100;
-  --color-error: #C62828;
+  --color-bg-candidate: #FAFAF8;
+  --color-bg-admin: #FFFFFF;
   
-  --radius-lg: 12px;
-  --radius-md: 8px;
+  --color-text-primary: #0D1B2A;
+  --color-text-secondary: #4A6080;
+  --color-text-admin-secondary: #64748B;
   
-  --font-sans: "Inter", "system-ui", "sans-serif";
+  --color-border: #F1F5F9;
+  --color-table-header: #F8FAFC;
+
+  /* Semantic Aliases */
+  --color-primary: var(--color-navy-700);
+  --color-accent: var(--color-blue-400);
   
-  --shadow-subtle: 0 2px 8px rgba(0,0,0,0.08);
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  
+  /* Typography */
+  --font-serif: "Instrument Serif", serif;
+  --font-sans: "Geist Sans", "Inter", "system-ui", "sans-serif";
+  
+  /* Radii */
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-3xl: 32px;
+  
+  /* Shadows */
+  --shadow-warm: 0 10px 30px -10px rgba(13, 27, 42, 0.04), 0 4px 12px -4px rgba(13, 27, 42, 0.02);
+  --shadow-cool: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-glow: 0 0 20px rgba(74, 144, 217, 0.1);
 }
 
 @layer base {
   body {
-    @apply bg-background text-primary font-sans antialiased;
+    @apply font-sans antialiased text-text-primary bg-white;
+  }
+
+  h1, h2, h3, .font-serif {
+    @apply font-serif;
   }
 }
 
 @layer components {
+  /* Premium SaaS Buttons */
   .btn-primary {
-    @apply bg-primary text-white px-5 py-2.5 rounded-md font-bold transition-all hover:bg-primary/90 hover:shadow-subtle active:scale-95;
+    @apply bg-navy-900 text-white px-6 py-3 rounded-xl font-bold transition-all duration-200 
+           hover:shadow-cool hover:-translate-y-0.5 active:scale-95;
   }
   
   .btn-accent {
-    @apply bg-accent text-white px-5 py-2.5 rounded-md font-bold transition-all hover:bg-accent/90 hover:shadow-subtle active:scale-95;
+    @apply bg-blue-400 text-white px-6 py-3 rounded-xl font-bold transition-all duration-200
+           hover:bg-blue-500 hover:shadow-glow hover:-translate-y-0.5 active:scale-95 relative overflow-hidden;
+  }
+
+  .btn-accent::after {
+    content: '';
+    @apply absolute inset-0 bg-white/10 opacity-0 transition-opacity duration-200 hover:opacity-100;
   }
   
-  .card {
-    @apply bg-white rounded-lg border border-gray-100 shadow-subtle p-6;
+  /* Card Styles */
+  .card-candidate {
+    @apply bg-white rounded-3xl border border-border shadow-warm p-8 transition-all duration-200 hover:-translate-y-1;
   }
   
+  .card-admin {
+    @apply bg-white rounded-2xl border border-border shadow-cool p-6;
+  }
+
+  /* Form Elements */
   .input-field {
-    @apply w-full px-4 py-2 bg-white border border-gray-200 rounded-md outline-none transition-all focus:ring-2 focus:ring-accent/20 focus:border-accent;
+    @apply w-full px-4 py-3 bg-slate-50 border border-border rounded-xl outline-none transition-all duration-200
+           placeholder:text-text-secondary/30
+           focus:bg-white focus:ring-4 focus:ring-blue-400/5 focus:border-blue-400/40;
   }
   
-  .badge {
-    @apply px-2.5 py-1 rounded-full text-xs font-bold inline-flex items-center space-x-1;
+  /* Badges */
+  .badge-status {
+    @apply px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider inline-flex items-center bg-blue-400/10 text-blue-600;
   }
+}
+
+/* Custom Animations */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation: shimmer 2s infinite;
 }

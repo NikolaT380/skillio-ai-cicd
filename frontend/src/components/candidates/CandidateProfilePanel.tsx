@@ -11,7 +11,8 @@ import {
   Briefcase,
   GraduationCap,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  TrendingUp
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { 
@@ -42,8 +43,8 @@ const CandidateProfilePanel: React.FC<CandidateProfilePanelProps> = ({
 
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const scoreColor = candidate.match_score > 0.6 ? '#2E7D32' : candidate.match_score > 0.4 ? '#E65100' : '#C62828';
-  const scoreLabel = candidate.match_score > 0.6 ? 'Strong Match' : candidate.match_score > 0.4 ? 'Partial Match' : 'Weak Match';
+  const scoreColor = candidate.match_score > 0.6 ? '#10B981' : candidate.match_score > 0.4 ? '#F59E0B' : '#EF4444';
+  const scoreLabel = candidate.match_score > 0.6 ? 'Exceptional Match' : candidate.match_score > 0.4 ? 'Qualified Fit' : 'Requires Review';
 
   const chartData = [
     { value: candidate.match_score * 100, fill: scoreColor }
@@ -64,7 +65,7 @@ const CandidateProfilePanel: React.FC<CandidateProfilePanelProps> = ({
   };
 
   const statusOptions: Array<{ id: Candidate['status'], label: string, icon: any, color: string }> = [
-    { id: 'submitted', label: 'Submitted', icon: Clock, color: 'hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200' },
+    { id: 'submitted', label: 'Submitted', icon: Clock, color: 'hover:bg-blue-400/5 hover:text-blue-400 hover:border-blue-400/20' },
     { id: 'under_review', label: 'In Review', icon: Briefcase, color: 'hover:bg-warning/10 hover:text-warning hover:border-warning/30' },
     { id: 'recommended', label: 'Shortlist', icon: BadgeCheck, color: 'hover:bg-success/10 hover:text-success hover:border-success/30' },
     { id: 'rejected', label: 'Rejected', icon: XCircle, color: 'hover:bg-error/10 hover:text-error hover:border-error/30' }
@@ -75,51 +76,66 @@ const CandidateProfilePanel: React.FC<CandidateProfilePanelProps> = ({
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
-      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className="fixed top-0 right-0 h-full w-full max-w-xl bg-white shadow-[-20px_0_60px_-15px_rgba(0,0,0,0.1)] z-[100] flex flex-col overflow-hidden border-l border-gray-100"
+      transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+      className="fixed top-0 right-0 h-full w-full max-w-xl bg-white shadow-2xl z-[100] flex flex-col overflow-hidden border-l border-border"
     >
       {/* Header */}
-      <div className="p-8 border-b border-gray-50 flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md z-10">
-        <div className="flex items-center space-x-3">
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl text-gray-400 transition-colors">
-            <X size={24} />
+      <div className="p-8 border-b border-border flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur-xl z-20">
+        <div className="flex items-center space-x-4">
+          <button onClick={onClose} className="p-2.5 hover:bg-slate-50 rounded-2xl text-text-admin-secondary transition-colors group">
+            <X size={24} className="group-hover:rotate-90 transition-transform duration-300" />
           </button>
-          <span className="text-xs font-black text-gray-300 uppercase tracking-widest">Candidate DNA</span>
+          <div>
+            <span className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] block mb-0.5">Intelligence Report</span>
+            <span className="text-sm font-extrabold text-navy-900 uppercase tracking-widest">Candidate DNA</span>
+          </div>
         </div>
         <div className="flex space-x-2">
           <button 
              onClick={() => onDelete(candidate.id)}
-             className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+             className="p-3 text-error/40 hover:text-error hover:bg-error/5 rounded-2xl transition-all"
           >
             <Trash2 size={20} />
           </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-8 space-y-12">
+      <div className="flex-1 overflow-y-auto p-10 space-y-12 pb-24">
         {/* Profile Info */}
         <section className="flex flex-col items-center text-center">
-          <div className="w-24 h-24 rounded-3xl bg-primary flex items-center justify-center text-white font-black text-3xl shadow-xl shadow-primary/20 mb-6">
-            {candidate.full_name.charAt(0)}
+          <div className="relative group">
+            <div className="w-28 h-28 rounded-[2.5rem] bg-white border border-border flex items-center justify-center text-navy-900 font-serif italic text-4xl shadow-cool mb-8 relative z-10">
+              {candidate.full_name.charAt(0)}
+            </div>
+            <div className="absolute inset-0 bg-blue-400 rounded-[2.5rem] blur-2xl opacity-10 group-hover:opacity-20 transition-opacity"></div>
           </div>
-          <h2 className="text-3xl font-black text-primary">{candidate.full_name}</h2>
-          <div className="flex flex-col sm:flex-row items-center sm:space-x-6 space-y-2 sm:space-y-0 mt-4 text-gray-400 font-bold">
-            <div className="flex items-center"><Mail size={16} className="mr-2" /> {candidate.email}</div>
-            {candidate.phone && <div className="flex items-center"><Phone size={16} className="mr-2" /> {candidate.phone}</div>}
+          <h2 className="text-3xl font-serif italic text-navy-900 mb-4">{candidate.full_name}</h2>
+          <div className="flex flex-col items-center space-y-3">
+            <div className="flex items-center text-text-admin-secondary font-bold text-sm bg-slate-50 px-5 py-2 rounded-xl border border-border">
+              <Mail size={16} className="mr-3 text-blue-600" /> {candidate.email}
+            </div>
+            {candidate.phone && (
+              <div className="flex items-center text-text-admin-secondary font-bold text-sm bg-slate-50 px-5 py-2 rounded-xl border border-border">
+                <Phone size={16} className="mr-3 text-blue-600" /> {candidate.phone}
+              </div>
+            )}
           </div>
         </section>
 
         {/* Match Score Gauge */}
-        <section className="bg-gray-50/50 rounded-3xl p-8 border border-gray-100 relative overflow-hidden">
+        <section className="bg-slate-50/50 rounded-[2.5rem] p-10 border border-border relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-6">
+            <TrendingUp size={24} className="text-blue-600 opacity-20 group-hover:opacity-100 transition-opacity" />
+          </div>
           <div className="grid grid-cols-2 items-center">
-            <div className="h-40 w-40 relative">
+            <div className="h-44 w-44 relative">
               <ResponsiveContainer width="100%" height="100%">
                 <RadialBarChart 
                   innerRadius="80%" 
                   outerRadius="100%" 
                   data={chartData} 
-                  startAngle={180} 
-                  endAngle={-180}
+                  startAngle={90} 
+                  endAngle={450}
                 >
                   <PolarAngleAxis 
                     type="number" 
@@ -130,57 +146,56 @@ const CandidateProfilePanel: React.FC<CandidateProfilePanelProps> = ({
                   <RadialBar 
                     background 
                     dataKey="value" 
-                    cornerRadius={10} 
+                    cornerRadius={20} 
                   />
                 </RadialBarChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-3xl font-black text-primary">{(candidate.match_score * 100).toFixed(0)}%</span>
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Score</span>
+                <span className="text-4xl font-serif italic text-navy-900">{(candidate.match_score * 100).toFixed(0)}%</span>
+                <span className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em] mt-1">Accuracy</span>
               </div>
             </div>
-            <div className="pl-6">
-              <h4 className="text-xl font-black text-primary mb-2 line-tight">{scoreLabel}</h4>
-              <p className="text-sm text-gray-500 font-medium leading-relaxed">
-                Ranked purely on semantic alignment with the job's mandatory criteria and general requirements.
+            <div className="pl-8">
+              <h4 className="text-xl font-serif italic text-navy-900 mb-3">{scoreLabel}</h4>
+              <p className="text-xs text-text-admin-secondary font-semibold leading-relaxed uppercase tracking-widest opacity-60">
+                Ranked via semantic alignment with role criteria.
               </p>
             </div>
           </div>
         </section>
 
         {/* Status Control */}
-        <section className="space-y-4">
-          <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center">
-            <ChevronRight size={14} className="mr-2 text-accent" /> Set Application Status
+        <section className="space-y-6">
+          <h4 className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em] flex items-center">
+            <ChevronRight size={14} className="mr-3 text-blue-600" /> Decision Pipeline
           </h4>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-4">
              {statusOptions.map((status) => (
                <button 
                  key={status.id}
-
                  onClick={() => handleUpdateStatus(status.id)}
                  className={`
-                   flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all font-bold gap-2 text-xs
+                   flex items-center space-x-4 p-5 rounded-2xl border transition-all duration-300 text-left
                    ${candidate.status === status.id 
-                     ? 'bg-primary text-white border-primary shadow-lg' 
-                     : 'bg-white border-gray-100 text-gray-400 ' + status.color}
+                     ? 'bg-white border-blue-600 shadow-glow ring-1 ring-blue-600 text-blue-600 scale-[1.02]' 
+                     : 'bg-white border-border text-text-admin-secondary hover:border-slate-300 ' + status.color}
                  `}
                >
-                 <status.icon size={20} />
-                 {status.label}
+                 <status.icon size={20} className={candidate.status === status.id ? 'text-blue-600' : ''} />
+                 <span className="font-extrabold uppercase tracking-widest text-[10px]">{status.label}</span>
                </button>
              ))}
           </div>
         </section>
 
         {/* Skills Tags */}
-        <section className="space-y-4">
-          <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center">
-            <ChevronRight size={14} className="mr-2 text-accent" /> Extracted Skills
+        <section className="space-y-6">
+          <h4 className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em] flex items-center">
+            <ChevronRight size={14} className="mr-3 text-blue-600" /> Skill Matrix
           </h4>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {candidate.skills.map(skill => (
-              <span key={skill} className="px-4 py-2 bg-accent/5 text-accent rounded-xl text-xs font-bold border border-accent/10">
+              <span key={skill} className="px-5 py-2.5 bg-white text-navy-900 rounded-xl text-[10px] font-black uppercase tracking-widest border border-border shadow-sm hover:border-blue-600 hover:text-blue-600 transition-colors">
                 {skill}
               </span>
             ))}
@@ -189,39 +204,39 @@ const CandidateProfilePanel: React.FC<CandidateProfilePanelProps> = ({
 
         {/* Details Grid */}
         <section className="grid grid-cols-2 gap-6">
-           <div className="card p-5 space-y-2">
-              <div className="flex items-center space-x-2 text-gray-400">
-                <Briefcase size={16} />
-                <span className="text-[10px] font-black uppercase tracking-widest">Experience</span>
+           <div className="bg-slate-50/50 rounded-[2rem] border border-border p-6 space-y-3 shadow-sm">
+              <div className="flex items-center space-x-3 text-blue-600">
+                <Briefcase size={18} />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-admin-secondary">Experience</span>
               </div>
-              <p className="font-bold text-primary">
-                {candidate.experience_years} Years {candidate.experience_total_months ? `${candidate.experience_total_months % 12} Months` : ''}
+              <p className="font-serif italic text-lg text-navy-900">
+                {candidate.experience_years} Years
               </p>
            </div>
-           <div className="card p-5 space-y-2">
-              <div className="flex items-center space-x-2 text-gray-400">
-                <GraduationCap size={16} />
-                <span className="text-[10px] font-black uppercase tracking-widest">Education</span>
+           <div className="bg-slate-50/50 rounded-[2rem] border border-border p-6 space-y-3 shadow-sm">
+              <div className="flex items-center space-x-3 text-blue-600">
+                <GraduationCap size={18} />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-admin-secondary">Academic</span>
               </div>
-              <p className="font-bold text-primary truncate" title={candidate.education || 'N/A'}>
-                {candidate.education || 'No degree specified'}
+              <p className="font-serif italic text-lg text-navy-900 truncate" title={candidate.education || 'N/A'}>
+                {candidate.education ? candidate.education.split(' ').slice(0, 2).join(' ') + '...' : 'N/A'}
               </p>
            </div>
         </section>
       </div>
 
       {/* Footer Actions */}
-      <div className="p-8 border-t border-gray-50 bg-gray-50/50 flex gap-4">
+      <div className="p-10 border-t border-border bg-white/80 backdrop-blur-xl flex gap-6 absolute bottom-0 w-full z-20">
          <a 
           href={candidate.cv_url ? (/^https?:\/\//i.test(candidate.cv_url) ? candidate.cv_url : `${API_BASE_URL.replace(/\/$/, '')}/uploads/${candidate.cv_url}`) : '#'}
           target="_blank" 
           rel="noopener noreferrer"
-          className="flex-1 btn-primary py-4 flex items-center justify-center"
+          className="flex-1 btn-primary py-5 flex items-center justify-center"
          >
-           <Download size={20} className="mr-2" /> Download CV
+           <Download size={20} className="mr-3" /> <span className="text-xs font-black uppercase tracking-widest">Download CV</span>
          </a>
-         <button className="flex-1 px-4 py-4 rounded-xl border-2 border-primary text-primary font-bold hover:bg-primary hover:text-white transition-all flex items-center justify-center">
-           Email Candidate <ExternalLink size={18} className="ml-2" />
+         <button className="flex-1 px-6 py-5 rounded-2xl border border-border bg-white text-text-admin-secondary font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 hover:text-navy-900 transition-all flex items-center justify-center">
+           Contact <ExternalLink size={18} className="ml-3" />
          </button>
       </div>
     </motion.div>

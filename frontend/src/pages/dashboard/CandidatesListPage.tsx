@@ -6,9 +6,8 @@ import {
   Search,
   Loader2,
   Users,
-  CheckCircle2,
   Clock,
-  Briefcase
+  Filter
 } from 'lucide-react';
 import { useJobs } from '../../hooks/useJobs';
 import { useCandidates } from '../../hooks/useCandidates';
@@ -57,100 +56,126 @@ const CandidatesListPage: React.FC = () => {
   if (loading && candidates.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <Loader2 className="animate-spin text-accent" size={48} />
+        <Loader2 className="animate-spin text-blue-400" size={48} />
       </div>
     );
   }
 
   return (
-    <div className="space-y-10">
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="space-y-12">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-8">
         <div>
-          <Link to="/dashboard/jobs" className="text-gray-400 hover:text-accent font-bold text-sm flex items-center mb-4 transition-colors">
-            <ChevronLeft size={16} className="mr-1" /> Back to Jobs
+          <Link to="/dashboard/jobs" className="text-text-admin-secondary hover:text-navy-900 font-extrabold text-[10px] uppercase tracking-[0.2em] flex items-center mb-6 transition-colors group">
+            <ChevronLeft size={14} className="mr-1.5 group-hover:-translate-x-1 transition-transform" /> Back to Openings
           </Link>
-          <h1 className="text-3xl font-black text-primary">{job?.title || 'Candidates'}</h1>
-          <p className="text-gray-500 font-medium mt-1">Reviewing {candidates.length} AI-ranked profiles.</p>
+          <h1 className="text-4xl font-serif text-navy-900 mb-2 italic">{job?.title || 'Candidates'}</h1>
+          <p className="text-text-admin-secondary font-semibold uppercase tracking-widest text-xs">Reviewing {candidates.length} AI-ranked profiles.</p>
         </div>
         <div className="flex space-x-3">
-           <button className="flex items-center px-6 py-3 rounded-xl border border-gray-200 font-bold text-primary hover:bg-white transition-all shadow-subtle">
-             <Download size={18} className="mr-2" /> Export to CSV
+           <button className="flex items-center px-8 py-4 rounded-2xl bg-white border border-border font-black text-[10px] uppercase tracking-widest text-navy-900 hover:bg-bg-admin transition-all shadow-cool">
+             <Download size={18} className="mr-3 text-blue-400" /> Export to CSV
            </button>
         </div>
       </header>
 
-      {/* Threshold Slider */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-subtle p-6">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-black text-gray-400 uppercase tracking-widest">
-            AI Match Threshold
-          </span>
-          <span className="text-sm font-black text-accent">
-            Showing: {filteredCandidates.length} / {candidates.length} candidates
-          </span>
+      {/* Threshold Slider & Filters */}
+      <div className="grid lg:grid-cols-3 gap-8 items-start">
+        <div className="lg:col-span-2 bg-white rounded-[2.5rem] border border-border shadow-cool p-10 flex flex-col justify-center">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-400/10 text-blue-400 flex items-center justify-center">
+                <Filter size={18} />
+              </div>
+              <span className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em]">
+                AI Match Threshold
+              </span>
+            </div>
+            <div className="px-5 py-2 bg-navy-900 text-blue-400 rounded-xl font-serif italic text-lg shadow-xl shadow-navy-900/10">
+              {threshold}%
+            </div>
+          </div>
+          <div className="flex items-center space-x-6">
+            <span className="text-[10px] font-black text-text-admin-secondary/40">0%</span>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={threshold}
+              onChange={(e) => setThreshold(Number(e.target.value))}
+              className="flex-1 h-3 bg-bg-admin rounded-full cursor-pointer accent-blue-400 appearance-none shadow-inner"
+            />
+            <span className="text-[10px] font-black text-text-admin-secondary/40">100%</span>
+          </div>
+          <p className="mt-8 text-xs font-semibold text-text-admin-secondary text-center italic">
+            Currently displaying <span className="text-navy-900 font-black">{filteredCandidates.length}</span> out of <span className="text-navy-900 font-black">{candidates.length}</span> applicants meeting this precision level.
+          </p>
         </div>
-        <div className="flex items-center space-x-4">
-          <span className="text-xs font-bold text-gray-400">0%</span>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={threshold}
-            onChange={(e) => setThreshold(Number(e.target.value))}
-            className="flex-1 h-2 rounded-full cursor-pointer accent-[var(--color-accent)]"
-          />
-          <span className="text-xs font-bold text-gray-400">100%</span>
-          <div className="min-w-[60px] text-center px-3 py-1.5 bg-accent text-white rounded-lg font-black text-sm">
-            {threshold}%
+
+        <div className="bg-navy-900 rounded-[2.5rem] p-10 text-white shadow-2xl shadow-navy-900/30 flex flex-col h-full justify-center">
+          <div className="flex items-center space-x-4 mb-4">
+            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-blue-400">
+              <Users size={24} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Application Volume</p>
+              <p className="text-2xl font-serif italic">{candidates.length} Profiles</p>
+            </div>
+          </div>
+          <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: '100%' }}
+              className="h-full bg-blue-400"
+            />
           </div>
         </div>
       </div>
 
       {/* Tabs & Search */}
-      <div className="flex flex-col md:flex-row gap-8 items-center border-b border-gray-100 pb-0">
-        <div className="flex space-x-8 overflow-x-auto w-full md:w-auto">
+      <div className="flex flex-col lg:flex-row gap-10 items-center border-b border-border pb-0 relative">
+        <div className="flex space-x-10 overflow-x-auto w-full lg:w-auto px-2">
           {(['All', 'Submitted', 'In Review', 'Recommended', 'Rejected'] as TabType[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`
-                px-2 py-4 text-sm font-black uppercase tracking-widest relative transition-colors
-                ${activeTab === tab ? 'text-accent' : 'text-gray-400 hover:text-primary'}
+                px-2 py-6 text-[10px] font-black uppercase tracking-[0.2em] relative transition-all duration-300
+                ${activeTab === tab ? 'text-blue-400' : 'text-text-admin-secondary hover:text-navy-900'}
               `}
             >
               {tab}
               {activeTab === tab && (
-                <motion.div layoutId="tab-active" className="absolute bottom-0 left-0 right-0 h-1 bg-accent rounded-full" />
+                <motion.div layoutId="tab-indicator" className="absolute bottom-0 left-0 right-0 h-1 bg-blue-400 rounded-full shadow-glow" />
               )}
             </button>
           ))}
         </div>
         <div className="flex-1 w-full relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-accent transition-colors" size={18} />
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-text-admin-secondary group-focus-within:text-blue-400 transition-colors" size={20} />
           <input
             type="text"
-            placeholder="Search candidates..."
-            className="input-field pl-12 py-3 bg-transparent border-none focus:ring-0"
+            placeholder="Search by name, email, or credentials..."
+            className="w-full pl-16 py-6 bg-transparent outline-none text-sm font-semibold text-navy-900 placeholder:text-text-admin-secondary/40"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
-      {/* Candidates Grid/Table */}
-      <div className="card p-0 overflow-hidden">
+      {/* Candidates Table */}
+      <div className="bg-white rounded-[2.5rem] border border-border shadow-cool overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-gray-50/50">
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rank</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Name</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Match Score</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Applied</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+              <tr className="bg-table-header">
+                <th className="px-10 py-6 text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em]">Rank</th>
+                <th className="px-10 py-6 text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em]">Candidate Profile</th>
+                <th className="px-10 py-6 text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em]">AI Match Score</th>
+                <th className="px-10 py-6 text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em]">Application Date</th>
+                <th className="px-10 py-6 text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em] text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-bg-admin">
               {filteredCandidates.map((c, idx) => (
                 <motion.tr
                   key={c.id}
@@ -158,66 +183,60 @@ const CandidatesListPage: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.05 }}
                   onClick={() => setSelectedCandidate(c)}
-                  className="group cursor-pointer hover:bg-background-alt transition-colors"
+                  className="group cursor-pointer hover:bg-table-header/40 transition-all duration-200"
                 >
-                  <td className="px-8 py-6">
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center font-black text-primary text-xs">
+                  <td className="px-10 py-8">
+                    <div className="w-10 h-10 rounded-xl bg-bg-admin flex items-center justify-center font-serif italic text-navy-900 text-sm shadow-sm">
                       #{idx + 1}
                     </div>
                   </td>
-                  <td className="px-8 py-6">
-                    <div className="flex items-center space-x-4">
-                       <div className="w-10 h-10 rounded-xl bg-accent/5 text-accent flex items-center justify-center font-black text-sm">
+                  <td className="px-10 py-8">
+                    <div className="flex items-center space-x-5">
+                       <div className="w-12 h-12 rounded-2xl bg-blue-400/10 text-blue-400 flex items-center justify-center font-serif italic text-xl shadow-sm group-hover:shadow-glow group-hover:scale-105 transition-all">
                          {c.full_name.charAt(0)}
                        </div>
                        <div>
-                         <p className="font-bold text-primary">{c.full_name}</p>
-                         <p className="text-xs text-gray-400 font-medium">{c.email}</p>
+                         <p className="font-bold text-navy-900 text-sm">{c.full_name}</p>
+                         <p className="text-[10px] font-black text-text-admin-secondary uppercase tracking-widest mt-1 opacity-60">{c.email}</p>
                        </div>
                     </div>
                   </td>
-                  <td className="px-8 py-6">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <td className="px-10 py-8">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-32 h-2.5 bg-bg-admin rounded-full overflow-hidden p-0.5">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${c.match_score * 100}%` }}
                           transition={{ duration: 1 }}
-                          className={`h-full ${c.match_score > 0.6 ? 'bg-success' : c.match_score > 0.4 ? 'bg-warning' : 'bg-error'}`}
+                          className={`h-full rounded-full ${c.match_score > 0.6 ? 'bg-success shadow-[0_0_10px_rgba(16,185,129,0.3)]' : c.match_score > 0.4 ? 'bg-warning shadow-[0_0_10px_rgba(245,158,11,0.3)]' : 'bg-error shadow-[0_0_10px_rgba(239,68,68,0.3)]'}`}
                         />
                       </div>
-                      <span className="text-sm font-black text-primary">{(c.match_score * 100).toFixed(0)}%</span>
+                      <span className="text-xs font-black text-navy-900">{(c.match_score * 100).toFixed(0)}%</span>
                     </div>
                   </td>
-                  <td className="px-8 py-6">
-                     <span className="text-sm font-bold text-gray-500 uppercase flex items-center">
-                       <Clock size={14} className="mr-2 opacity-40" />
+                  <td className="px-10 py-8">
+                     <div className="flex items-center text-[10px] font-black text-text-admin-secondary uppercase tracking-widest opacity-60">
+                       <Clock size={12} className="mr-2" />
                        {formatDistanceToNow(new Date(c.created_at))} ago
-                     </span>
+                     </div>
                   </td>
-                  <td className="px-8 py-6 text-right">
+                  <td className="px-10 py-8 text-right flex items-center justify-end space-x-6">
                     <span className={`
-                      badge ${
+                      badge-status ${
                         c.status === 'recommended' ? 'bg-success/10 text-success' : 
                         c.status === 'rejected' ? 'bg-error/10 text-error' : 
                         c.status === 'under_review' ? 'bg-warning/10 text-warning' :
-                        'bg-blue-50 text-blue-600'
+                        'bg-blue-400/12 text-navy-700'
                       }
-                      opacity-0 group-hover:opacity-100 transition-opacity mr-4
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-300
                     `}>
-                      {c.status === 'recommended' && <CheckCircle2 size={12} />}
-                      {c.status === 'rejected' && <XCircle size={12} />}
-                      {c.status === 'under_review' && <Briefcase size={12} />}
-                      {c.status === 'submitted' && <Clock size={12} />}
-                      <span>{c.status.replace('_', ' ').charAt(0).toUpperCase() + c.status.replace('_', ' ').slice(1)}</span>
+                      <span className="uppercase tracking-widest text-[9px]">{c.status.replace('_', ' ')}</span>
                     </span>
-                    <Link 
-                      to={`/dashboard/candidates/${c.id}`}
-                      onClick={(e) => e.stopPropagation()} 
-                      className="btn-primary py-2 px-4 text-xs inline-block"
+                    <button 
+                      className="btn-primary py-3 px-6 text-[10px] uppercase tracking-widest shadow-cool opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     >
                       View Profile
-                    </Link>
+                    </button>
                   </td>
 
                 </motion.tr>
@@ -225,9 +244,9 @@ const CandidatesListPage: React.FC = () => {
             </tbody>
           </table>
           {filteredCandidates.length === 0 && (
-            <div className="text-center py-20">
-               <Users className="mx-auto text-gray-200 mb-4" size={48} />
-               <p className="text-gray-400 font-bold">No candidates found for this selection.</p>
+            <div className="text-center py-32 bg-bg-admin/20">
+               <Users className="mx-auto text-text-admin-secondary/20 mb-8" size={64} />
+               <p className="text-text-admin-secondary font-black uppercase tracking-[0.2em] text-xs">No matching profiles found for this criteria.</p>
             </div>
           )}
         </div>
@@ -242,7 +261,7 @@ const CandidatesListPage: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedCandidate(null)}
-              className="fixed inset-0 bg-primary/20 backdrop-blur-sm z-[90]"
+              className="fixed inset-0 bg-navy-900/40 backdrop-blur-sm z-[90]"
             />
             <CandidateProfilePanel
               candidate={selectedCandidate}
@@ -263,11 +282,5 @@ const CandidatesListPage: React.FC = () => {
     </div>
   );
 };
-
-const XCircle = ({ size, className }: { size: number, className?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" />
-  </svg>
-);
 
 export default CandidatesListPage;

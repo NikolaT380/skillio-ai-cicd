@@ -62,7 +62,10 @@ def get_jobs(
     Get all jobs. If an HR Admin is logged in, this still returns all jobs, 
     but we could easily filter by creator_id if a 'mine' query param was added.
     """
-    return db.query(Job).all()
+    jobs = db.query(Job).all()
+    for job in jobs:
+        job.applicant_count = db.query(Candidate).filter(Candidate.job_id == job.id).count()
+    return jobs
 
 @router.patch("/{job_id}", response_model=JobResponse)
 def update_job(job_id: UUID4, job_in: JobUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -87,6 +90,7 @@ def update_job(job_id: UUID4, job_in: JobUpdate, db: Session = Depends(get_db), 
 
     db.commit()
     db.refresh(job)
+    job.applicant_count = db.query(Candidate).filter(Candidate.job_id == job.id).count()
     return job
 
 @router.get("/{job_id}", response_model=JobResponse)
@@ -100,6 +104,7 @@ def get_job(job_id: UUID4, db: Session = Depends(get_db)):
             status_code=404, 
             detail="Job not found"
         )
+    job.applicant_count = db.query(Candidate).filter(Candidate.job_id == job.id).count()
     return job
 
 @router.get("/{job_id}/candidates", response_model=List[CandidateResponse])

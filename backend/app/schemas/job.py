@@ -31,6 +31,7 @@ class JobResponse(JobBase):
     id: UUID4
     creator_id: Optional[UUID4] = None
     created_at: datetime
+    applicant_count: Optional[int] = 0
     # We purposely omit the 'embedding' from the response. 
     # Sending an array of 1536 floats to the frontend is a huge waste of bandwidth
 

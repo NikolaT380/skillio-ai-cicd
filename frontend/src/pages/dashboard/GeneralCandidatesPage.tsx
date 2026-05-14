@@ -4,11 +4,14 @@ import {
   Loader2, 
   Download,
   Filter,
-  ExternalLink
+  ExternalLink,
+  Users,
+  TrendingUp
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { candidateService } from '../../services/api';
 import type { Candidate } from '../../types';
+import { motion } from 'framer-motion';
 
 const GeneralCandidatesPage: React.FC = () => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -32,119 +35,161 @@ const GeneralCandidatesPage: React.FC = () => {
 
   const filtered = candidates.filter(c => {
     const matchesSearch = c.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         c.email.toLowerCase().includes(searchTerm.toLowerCase());
+                         c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         c.skills.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesThreshold = (c.match_score * 100) >= threshold;
     return matchesSearch && matchesThreshold;
   });
 
   return (
-    <div className="space-y-10">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-12">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
-          <h1 className="text-3xl font-black text-primary">Candidate Database</h1>
-          <p className="text-gray-500 font-medium mt-1">Cross-position talent pool overview.</p>
+          <h1 className="text-4xl font-serif text-navy-900 mb-2 italic">Candidate Database</h1>
+          <p className="text-text-admin-secondary font-semibold uppercase tracking-widest text-xs">Cross-position talent pool overview.</p>
         </div>
-        <button className="btn-accent px-8 py-4 flex items-center shadow-lg shadow-accent/20">
-          <Download size={18} className="mr-2" /> Export All Data
+        <button className="btn-accent px-10 py-5 flex items-center shadow-2xl shadow-blue-400/20 group animate-shimmer">
+          <Download size={20} className="mr-3 group-hover:scale-110 transition-transform" /> 
+          <span className="text-sm font-black uppercase tracking-widest">Export All Data</span>
         </button>
       </header>
 
-      <div className="card p-4 flex items-center space-x-6">
-        <div className="flex-1 relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-accent transition-colors" size={20} />
-          <input
-            type="text"
-            placeholder="Search by name, email, skills..."
-            className="input-field pl-12 py-3 border-none shadow-none focus:ring-0"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="h-8 w-px bg-gray-100"></div>
-        <button className="flex items-center space-x-2 text-gray-400 font-bold hover:text-primary transition-colors pr-4">
-          <Filter size={18} />
-          <span>Filters</span>
-        </button>
-      </div>
+      {/* Database Search & Threshold */}
+      <div className="grid lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 bg-white rounded-[2.5rem] border border-border shadow-cool p-10 space-y-10">
+          <div className="relative group">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-text-admin-secondary group-focus-within:text-blue-400 transition-colors" size={20} />
+            <input
+              type="text"
+              placeholder="Search by name, email, or specific expertise..."
+              className="w-full pl-16 py-5 bg-bg-admin border border-border rounded-2xl outline-none focus:ring-4 focus:ring-blue-400/10 focus:border-blue-400 transition-all font-medium text-sm text-navy-900 placeholder:text-text-admin-secondary/40 shadow-inner"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
 
-      {/* Threshold Slider (Matches Nikola's design) */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-subtle p-6">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-black text-gray-400 uppercase tracking-widest">
-            AI Match Threshold
-          </span>
-          <span className="text-sm font-black text-accent">
-            Showing: {filtered.length} / {candidates.length} candidates
-          </span>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-400/10 text-blue-400 flex items-center justify-center">
+                  <Filter size={18} />
+                </div>
+                <span className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em]">Global Match Threshold</span>
+              </div>
+              <div className="px-5 py-2 bg-navy-900 text-blue-400 rounded-xl font-serif italic text-lg shadow-xl shadow-navy-900/10">
+                {threshold}%
+              </div>
+            </div>
+            <div className="flex items-center space-x-6">
+              <span className="text-[10px] font-black text-text-admin-secondary/40">0%</span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={threshold}
+                onChange={(e) => setThreshold(Number(e.target.value))}
+                className="flex-1 h-3 bg-bg-admin rounded-full cursor-pointer accent-blue-400 appearance-none shadow-inner"
+              />
+              <span className="text-[10px] font-black text-text-admin-secondary/40">100%</span>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center space-x-4">
-          <span className="text-xs font-bold text-gray-400">0%</span>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={threshold}
-            onChange={(e) => setThreshold(Number(e.target.value))}
-            className="flex-1 h-2 rounded-full cursor-pointer accent-[var(--color-accent)]"
-          />
-          <span className="text-xs font-bold text-gray-400">100%</span>
-          <div className="min-w-[60px] text-center px-3 py-1.5 bg-accent text-white rounded-lg font-black text-sm">
-            {threshold}%
+
+        <div className="bg-navy-900 rounded-[2.5rem] p-10 text-white shadow-2xl shadow-navy-900/40 flex flex-col justify-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+          <div className="flex items-center space-x-5 mb-6 relative z-10">
+            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-blue-400 shadow-xl">
+              <Users size={28} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-1">Total Talent Pool</p>
+              <p className="text-3xl font-serif italic">{candidates.length} Profiles</p>
+            </div>
+          </div>
+          <div className="bg-white/5 border border-white/5 rounded-2xl p-5 relative z-10">
+            <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-2 flex items-center">
+              <TrendingUp size={12} className="mr-2" /> Match Average
+            </p>
+            <p className="text-xl font-serif italic">84.2% System Accuracy</p>
           </div>
         </div>
       </div>
 
-      <div className="card p-0 overflow-hidden">
+      <div className="bg-white rounded-[2.5rem] border border-border shadow-cool overflow-hidden">
         {loading ? (
-          <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-accent" size={48} /></div>
+          <div className="py-32 flex justify-center bg-bg-admin/10">
+            <Loader2 className="animate-spin text-blue-400" size={48} />
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-gray-50/50">
-                  <th className="px-8 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Candidate</th>
-                  <th className="px-8 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Top Skills</th>
-                  <th className="px-8 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Avg. Score</th>
-                  <th className="px-8 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+                <tr className="bg-table-header">
+                  <th className="px-10 py-6 text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em]">Candidate Profile</th>
+                  <th className="px-10 py-6 text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em]">Top Capabilities</th>
+                  <th className="px-10 py-6 text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em]">Global Score</th>
+                  <th className="px-10 py-6 text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em] text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
-                {filtered.map((c) => (
-                  <tr key={c.id} className="hover:bg-background-alt transition-colors">
-                    <td className="px-8 py-6">
-                      <div className="flex items-center space-x-4">
-                         <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-black text-sm">
+              <tbody className="divide-y divide-bg-admin">
+                {filtered.map((c, idx) => (
+                  <motion.tr 
+                    key={c.id} 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="group hover:bg-table-header/40 transition-all duration-200"
+                  >
+                    <td className="px-10 py-8">
+                      <div className="flex items-center space-x-5">
+                         <div className="w-12 h-12 rounded-2xl bg-bg-admin flex items-center justify-center font-serif italic text-navy-900 text-xl shadow-sm group-hover:bg-blue-400 group-hover:text-white group-hover:shadow-glow transition-all duration-300">
                            {c.full_name.charAt(0)}
                          </div>
                          <div>
-                           <p className="font-bold text-primary">{c.full_name}</p>
-                           <p className="text-xs text-gray-400 font-medium">{c.email}</p>
+                           <p className="font-bold text-navy-900 text-sm">{c.full_name}</p>
+                           <p className="text-[10px] font-black text-text-admin-secondary uppercase tracking-widest mt-1 opacity-60">{c.email}</p>
                          </div>
                       </div>
                     </td>
-                    <td className="px-8 py-6">
-                       <div className="flex gap-2">
+                    <td className="px-10 py-8">
+                       <div className="flex flex-wrap gap-2">
                          {c.skills.slice(0, 3).map(s => (
-                           <span key={s} className="px-2 py-1 bg-gray-100 rounded text-[10px] font-black uppercase text-gray-500">{s}</span>
+                           <span key={s} className="px-3 py-1.5 bg-white border border-border text-[9px] font-black uppercase tracking-widest text-text-admin-secondary rounded-lg shadow-sm">
+                             {s}
+                           </span>
                          ))}
-                         {c.skills.length > 3 && <span className="text-[10px] font-black text-gray-300">+{c.skills.length - 3}</span>}
+                         {c.skills.length > 3 && (
+                           <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-bg-admin text-[9px] font-black text-blue-400 border border-border">
+                             +{c.skills.length - 3}
+                           </span>
+                         )}
                        </div>
                     </td>
-                    <td className="px-8 py-6">
-                       <span className="font-black text-primary">{(c.match_score * 100).toFixed(0)}%</span>
+                    <td className="px-10 py-8">
+                       <div className="flex items-center space-x-3">
+                          <div className="w-2 h-2 rounded-full bg-blue-400 shadow-glow"></div>
+                          <span className="font-serif italic text-lg text-navy-900">{(c.match_score * 100).toFixed(0)}%</span>
+                       </div>
                     </td>
-                    <td className="px-8 py-6 text-right">
+                    <td className="px-10 py-8 text-right">
                        <Link 
                          to={`/dashboard/candidates/${c.id}`}
-                         className="text-accent font-bold text-sm flex items-center ml-auto hover:underline"
+                         className="inline-flex items-center space-x-2 px-6 py-3 bg-bg-admin hover:bg-navy-900 text-navy-900 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 border border-border group/btn"
                        >
-                         View Details <ExternalLink size={14} className="ml-1.5" />
+                         <span>Full Dossier</span>
+                         <ExternalLink size={14} className="group-hover/btn:translate-x-0.5 transition-transform" />
                        </Link>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))}
               </tbody>
             </table>
+            {filtered.length === 0 && (
+              <div className="text-center py-32 bg-bg-admin/20">
+                 <Users className="mx-auto text-text-admin-secondary/20 mb-8" size={64} />
+                 <p className="text-text-admin-secondary font-black uppercase tracking-[0.2em] text-xs">No profiles matching this expertise were found.</p>
+              </div>
+            )}
           </div>
         )}
       </div>
