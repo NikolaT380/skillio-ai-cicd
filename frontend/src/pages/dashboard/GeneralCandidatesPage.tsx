@@ -33,6 +33,34 @@ const GeneralCandidatesPage: React.FC = () => {
     fetchAll();
   }, []);
 
+  const exportToCSV = () => {
+    const headers = ['Name', 'Email', 'Phone', 'Skills', 'Experience (Years)', 'Education', 'Match Score (%)', 'Status', 'Applied Date', 'Job ID'];
+    const escape = (val: string | number | undefined) => {
+      const str = String(val ?? '');
+      return str.includes(',') || str.includes('"') || str.includes('\n') ? `"${str.replace(/"/g, '""')}"` : str;
+    };
+    const rows = candidates.map(c => [
+      escape(c.full_name),
+      escape(c.email),
+      escape(c.phone),
+      escape(c.skills.join('; ')),
+      escape(c.experience_years),
+      escape(c.education),
+      escape((c.match_score * 100).toFixed(0)),
+      escape(c.status),
+      escape(new Date(c.created_at).toLocaleDateString()),
+      escape(c.job_id),
+    ].join(','));
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `candidates_export_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const filtered = candidates.filter(c => {
     const matchesSearch = c.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -45,10 +73,10 @@ const GeneralCandidatesPage: React.FC = () => {
     <div className="space-y-12">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
-          <h1 className="text-4xl font-serif text-navy-900 mb-2 italic">Candidate Database</h1>
+          <h1 className="text-4xl  text-navy-900 mb-2">Candidate Database</h1>
           <p className="text-text-admin-secondary font-semibold uppercase tracking-widest text-xs">Cross-position talent pool overview.</p>
         </div>
-        <button className="btn-accent px-10 py-5 flex items-center shadow-2xl shadow-blue-400/20 group animate-shimmer">
+        <button onClick={exportToCSV} className="btn-accent px-10 py-5 flex items-center shadow-2xl shadow-blue-400/20 group animate-shimmer">
           <Download size={20} className="mr-3 group-hover:scale-110 transition-transform" /> 
           <span className="text-sm font-black uppercase tracking-widest">Export All Data</span>
         </button>
@@ -76,7 +104,7 @@ const GeneralCandidatesPage: React.FC = () => {
                 </div>
                 <span className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em]">Global Match Threshold</span>
               </div>
-              <div className="px-5 py-2 bg-navy-900 text-blue-400 rounded-xl font-serif italic text-lg shadow-xl shadow-navy-900/10">
+              <div className="px-5 py-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl font-semibold text-lg shadow-sm">
                 {threshold}%
               </div>
             </div>
@@ -95,22 +123,22 @@ const GeneralCandidatesPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-navy-900 rounded-[2.5rem] p-10 text-white shadow-2xl shadow-navy-900/40 flex flex-col justify-center relative overflow-hidden">
+        <div className="bg-slate-50 rounded-[2.5rem] p-10 border border-border shadow-cool flex flex-col justify-center relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
           <div className="flex items-center space-x-5 mb-6 relative z-10">
-            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-blue-400 shadow-xl">
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500 shadow-sm">
               <Users size={28} />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-1">Total Talent Pool</p>
-              <p className="text-3xl font-serif italic">{candidates.length} Profiles</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-admin-secondary mb-1">Total Talent Pool</p>
+              <p className="text-3xl font-semibold text-navy-900">{candidates.length} Profiles</p>
             </div>
           </div>
-          <div className="bg-white/5 border border-white/5 rounded-2xl p-5 relative z-10">
-            <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-2 flex items-center">
+          <div className="bg-white border border-border rounded-2xl p-5 relative z-10">
+            <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em] mb-2 flex items-center">
               <TrendingUp size={12} className="mr-2" /> Match Average
             </p>
-            <p className="text-xl font-serif italic">84.2% System Accuracy</p>
+            <p className="text-xl font-semibold text-navy-900">84.2% System Accuracy</p>
           </div>
         </div>
       </div>
@@ -142,7 +170,7 @@ const GeneralCandidatesPage: React.FC = () => {
                   >
                     <td className="px-10 py-8">
                       <div className="flex items-center space-x-5">
-                         <div className="w-12 h-12 rounded-2xl bg-bg-admin flex items-center justify-center font-serif italic text-navy-900 text-xl shadow-sm group-hover:bg-blue-400 group-hover:text-white group-hover:shadow-glow transition-all duration-300">
+                         <div className="w-12 h-12 rounded-2xl bg-bg-admin flex items-center justify-center font-semibold text-navy-900 text-xl shadow-sm group-hover:bg-blue-400 group-hover:text-white group-hover:shadow-glow transition-all duration-300">
                            {c.full_name.charAt(0)}
                          </div>
                          <div>
@@ -168,13 +196,13 @@ const GeneralCandidatesPage: React.FC = () => {
                     <td className="px-10 py-8">
                        <div className="flex items-center space-x-3">
                           <div className="w-2 h-2 rounded-full bg-blue-400 shadow-glow"></div>
-                          <span className="font-serif italic text-lg text-navy-900">{(c.match_score * 100).toFixed(0)}%</span>
+                          <span className="font-semibold text-lg text-navy-900">{(c.match_score * 100).toFixed(0)}%</span>
                        </div>
                     </td>
                     <td className="px-10 py-8 text-right">
                        <Link 
                          to={`/dashboard/candidates/${c.id}`}
-                         className="inline-flex items-center space-x-2 px-6 py-3 bg-bg-admin hover:bg-navy-900 text-navy-900 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 border border-border group/btn"
+                         className="inline-flex items-center space-x-2 px-6 py-3 bg-bg-admin hover:bg-slate-600 text-navy-900 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 border border-border group/btn"
                        >
                          <span>Full Dossier</span>
                          <ExternalLink size={14} className="group-hover/btn:translate-x-0.5 transition-transform" />

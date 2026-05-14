@@ -116,7 +116,7 @@ const ApplyPage: React.FC = () => {
     return (
       <div className="max-w-7xl mx-auto px-4 py-32 text-center">
         <AlertCircle size={64} className="mx-auto text-error mb-6" />
-        <h1 className="text-3xl font-serif mb-4">Position not found</h1>
+        <h1 className="text-3xl  mb-4">Position not found</h1>
         <Link to="/jobs" className="btn-primary">Return to Jobs</Link>
       </div>
     );
@@ -143,7 +143,7 @@ const ApplyPage: React.FC = () => {
               <div className="bg-blue-400/10 text-navy-700 px-4 py-1.5 rounded-full text-xs font-extrabold inline-block mb-6 uppercase tracking-widest border border-blue-400/20">
                 {job.company_name}
               </div>
-              <h1 className="text-5xl md:text-6xl font-serif text-navy-900 mb-8 leading-tight">{job.title}</h1>
+              <h1 className="text-5xl md:text-6xl  text-navy-900 mb-8 leading-tight">{job.title}</h1>
               <div className="flex flex-wrap gap-8 text-text-secondary font-semibold">
                 <div className="flex items-center">
                   <div className="w-10 h-10 rounded-xl bg-white shadow-warm flex items-center justify-center text-blue-400 mr-3">
@@ -166,13 +166,13 @@ const ApplyPage: React.FC = () => {
               transition={{ delay: 0.1 }}
               className="prose prose-slate max-w-none"
             >
-              <h2 className="text-2xl font-serif text-navy-900 mb-6 flex items-center">
+              <h2 className="text-2xl  text-navy-900 mb-6 flex items-center">
                 <Info className="mr-4 text-blue-400" size={24} />
                 About the Role
               </h2>
               <p className="text-text-secondary leading-relaxed text-lg font-medium whitespace-pre-wrap">{job.description}</p>
               
-              <h2 className="text-2xl font-serif text-navy-900 mt-12 mb-6 flex items-center">
+              <h2 className="text-2xl  text-navy-900 mt-12 mb-6 flex items-center">
                 <CheckCircle2 className="mr-4 text-blue-400" size={24} />
                 Key Requirements
               </h2>
@@ -196,7 +196,7 @@ const ApplyPage: React.FC = () => {
             transition={{ delay: 0.2 }}
             className="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-warm border border-border sticky top-24"
           >
-            <h3 className="text-3xl font-serif text-navy-900 mb-10">Personal Information</h3>
+            <h3 className="text-3xl  text-navy-900 mb-10">Personal Information</h3>
             <form onSubmit={handleSubmit} className="space-y-8">
               <div className="grid sm:grid-cols-2 gap-6">
                 <div className="space-y-3">

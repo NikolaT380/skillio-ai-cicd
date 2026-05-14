@@ -74,7 +74,7 @@ const Layout: React.FC<LayoutProps> = ({ children, variant = 'public' }) => {
                 className="md:hidden bg-white border-t border-border py-8 px-6 space-y-6 absolute w-full shadow-2xl"
               >
                 <Link to="/jobs" onClick={() => setIsMobileMenuOpen(false)} className="block text-lg text-text-secondary font-bold uppercase tracking-widest">Browse Jobs</Link>
-                <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="block text-xl text-navy-900 font-serif">HR Login</Link>
+                <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="block text-xl text-navy-900 ">HR Login</Link>
               </motion.div>
             )}
           </AnimatePresence>
@@ -90,28 +90,28 @@ const Layout: React.FC<LayoutProps> = ({ children, variant = 'public' }) => {
           </motion.div>
         </main>
 
-        <footer className="bg-navy-900 text-white py-24 border-t border-white/5 relative overflow-hidden">
+        <footer className="bg-slate-50 text-navy-900 py-24 border-t border-border relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
           <div className="max-w-7xl mx-auto px-4 relative z-10">
             <div className="flex flex-col md:flex-row justify-between items-start space-y-12 md:space-y-0">
               <div className="max-w-sm">
-                <Logo className="invert brightness-0 mb-8" />
-                <p className="text-blue-400/60 font-medium leading-relaxed">Elevating public administration recruitment with AI-driven semantic precision.</p>
+                <Logo className="mb-8" />
+                <p className="text-text-secondary font-medium leading-relaxed">Elevating public administration recruitment with AI-driven semantic precision.</p>
               </div>
               <div className="grid grid-cols-2 gap-16">
                 <div className="space-y-4">
-                  <h4 className="text-white font-serif italic text-lg mb-6">Candidate</h4>
-                  <Link to="/jobs" className="block text-blue-400/40 hover:text-white transition-colors font-medium">Find Work</Link>
-                  <Link to="/status" className="block text-blue-400/40 hover:text-white transition-colors font-medium">Track Application</Link>
+                  <h4 className="text-navy-900 font-semibold text-lg mb-6">Candidate</h4>
+                  <Link to="/jobs" className="block text-text-secondary hover:text-navy-900 transition-colors font-medium">Find Work</Link>
+                  <Link to="/status" className="block text-text-secondary hover:text-navy-900 transition-colors font-medium">Track Application</Link>
                 </div>
                 <div className="space-y-4">
-                  <h4 className="text-white font-serif italic text-lg mb-6">Legal</h4>
-                  <a href="#" className="block text-blue-400/40 hover:text-white transition-colors font-medium">Privacy Policy</a>
-                  <a href="#" className="block text-blue-400/40 hover:text-white transition-colors font-medium">Terms of Service</a>
+                  <h4 className="text-navy-900 font-semibold text-lg mb-6">Legal</h4>
+                  <a href="#" className="block text-text-secondary hover:text-navy-900 transition-colors font-medium">Privacy Policy</a>
+                  <a href="#" className="block text-text-secondary hover:text-navy-900 transition-colors font-medium">Terms of Service</a>
                 </div>
               </div>
             </div>
-            <div className="mt-24 pt-8 border-t border-white/5 flex justify-between items-center text-blue-400/20 text-xs font-bold uppercase tracking-widest">
+            <div className="mt-24 pt-8 border-t border-border flex justify-between items-center text-text-admin-secondary text-xs font-bold uppercase tracking-widest">
               <p>© 2026 Skillio AI. Built for the Public Sector.</p>
               <div className="flex space-x-6">
                 <span>v1.2.0</span>
@@ -165,7 +165,7 @@ const Layout: React.FC<LayoutProps> = ({ children, variant = 'public' }) => {
         <div className="p-6 border-t border-border">
           {!isSidebarCollapsed && (
             <div className="flex items-center space-x-4 p-4 mb-6 bg-bg-admin rounded-2xl border border-border">
-              <div className="w-12 h-12 rounded-xl bg-navy-900 flex items-center justify-center font-serif italic text-xl text-white shadow-xl shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center font-semibold text-xl text-blue-600 shadow-sm shrink-0">
                 {user?.full_name?.charAt(0) || 'H'}
               </div>
               <div className="min-w-0">
@@ -216,7 +216,7 @@ const Layout: React.FC<LayoutProps> = ({ children, variant = 'public' }) => {
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 mb-0.5">Staging Environment</p>
                 <p className="text-sm font-extrabold text-navy-900">Skillio AI Portal</p>
               </div>
-              <div className="w-12 h-12 rounded-2xl bg-navy-900 flex items-center justify-center text-blue-400 font-serif italic text-xl shadow-xl shadow-navy-900/10">
+              <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-xl shadow-sm">
                 S
               </div>
             </div>
@@ -244,17 +244,17 @@ const Layout: React.FC<LayoutProps> = ({ children, variant = 'public' }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMobileMenuOpen(false)}
-              className="fixed inset-0 bg-navy-900/60 backdrop-blur-md z-[60] md:hidden"
+              className="fixed inset-0 bg-slate-900/30 backdrop-blur-md z-[60] md:hidden"
             />
             <motion.div 
               initial={{ x: -300 }}
               animate={{ x: 0 }}
               exit={{ x: -300 }}
-              className="fixed inset-y-0 left-0 w-[300px] bg-navy-900 z-[70] p-8 flex flex-col md:hidden shadow-2xl"
+              className="fixed inset-y-0 left-0 w-[300px] bg-white z-[70] p-8 flex flex-col md:hidden shadow-2xl border-r border-border"
             >
               <div className="flex justify-between items-center mb-16">
-                <Logo className="invert brightness-0" />
-                <button onClick={() => setIsMobileMenuOpen(false)} className="text-blue-400 p-2">
+                <Logo />
+                <button onClick={() => setIsMobileMenuOpen(false)} className="text-text-admin-secondary p-2">
                   <X size={32} />
                 </button>
               </div>
@@ -266,12 +266,12 @@ const Layout: React.FC<LayoutProps> = ({ children, variant = 'public' }) => {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`
                       flex items-center space-x-6 px-6 py-5 rounded-2xl font-extrabold uppercase tracking-[0.2em] text-xs
-                      ${location.pathname === item.path 
-                        ? 'bg-navy-700 text-white shadow-2xl border border-white/5' 
-                        : 'text-white/40'}
+                      ${location.pathname === item.path
+                        ? 'bg-blue-50 text-blue-600 shadow-sm border border-blue-100'
+                        : 'text-text-admin-secondary hover:text-navy-900 hover:bg-slate-50'}
                     `}
                   >
-                    <item.icon size={24} className={location.pathname === item.path ? 'text-blue-400' : ''} />
+                    <item.icon size={24} className={location.pathname === item.path ? 'text-blue-600' : ''} />
                     <span>{item.label}</span>
                   </Link>
                 ))}

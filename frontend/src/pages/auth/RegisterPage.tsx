@@ -43,7 +43,7 @@ const RegisterPage: React.FC = () => {
             <div className="w-16 h-16 bg-blue-600/10 rounded-2xl flex items-center justify-center text-blue-600 mx-auto mb-6 shadow-sm">
               <User size={32} />
             </div>
-            <h1 className="text-3xl font-serif italic text-navy-900">Create HR Account</h1>
+            <h1 className="text-3xl font-semibold text-navy-900">Create HR Account</h1>
             <p className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em] mt-3">Join the Intelligence Network</p>
           </div>
 

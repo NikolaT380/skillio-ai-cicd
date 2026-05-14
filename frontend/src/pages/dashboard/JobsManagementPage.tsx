@@ -113,7 +113,7 @@ const JobsManagementPage: React.FC = () => {
     <div className="space-y-12">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
-          <h1 className="text-4xl font-serif text-navy-900 mb-2 italic">Jobs Management</h1>
+          <h1 className="text-4xl  text-navy-900 mb-2">Jobs Management</h1>
           <p className="text-text-admin-secondary font-semibold uppercase tracking-widest text-xs">Configure your active postings and requirements.</p>
         </div>
         <button 
@@ -139,7 +139,7 @@ const JobsManagementPage: React.FC = () => {
         </div>
         <div className="shrink-0">
            <div className="bg-white px-8 py-4 rounded-[2rem] border border-border shadow-cool flex items-center space-x-4">
-              <div className="w-12 h-12 rounded-2xl bg-navy-900 flex items-center justify-center font-serif italic text-blue-400 text-xl shadow-xl">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center font-semibold text-blue-600 text-xl shadow-sm">
                 {jobs.length}
               </div>
               <div>
@@ -225,7 +225,7 @@ const JobsManagementPage: React.FC = () => {
                     <div className="w-24 h-24 bg-white rounded-[2rem] shadow-cool flex items-center justify-center mx-auto mb-8 text-text-admin-secondary/20">
                       <Briefcase size={48} />
                     </div>
-                    <h3 className="text-xl font-serif text-navy-900 italic mb-2">No jobs posted yet</h3>
+                    <h3 className="text-xl  text-navy-900 mb-2">No jobs posted yet</h3>
                     <p className="text-text-admin-secondary font-semibold uppercase tracking-widest text-[10px] max-w-xs mx-auto">Create your first job posting to start receiving AI-ranked candidates.</p>
                   </td>
                 </tr>
@@ -244,7 +244,7 @@ const JobsManagementPage: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setConfirmDeleteId(null)}
-              className="absolute inset-0 bg-navy-900/60 backdrop-blur-md"
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-md"
             />
             <motion.div 
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
@@ -255,7 +255,7 @@ const JobsManagementPage: React.FC = () => {
               <div className="w-24 h-24 bg-error/10 text-error rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-xl shadow-error/5">
                 <AlertTriangle size={48} />
               </div>
-              <h2 className="text-3xl font-serif text-navy-900 mb-4 italic">Confirm Deletion</h2>
+              <h2 className="text-3xl  text-navy-900 mb-4">Confirm Deletion</h2>
               <p className="text-text-admin-secondary leading-relaxed mb-10 font-medium">
                 This will permanently delete the job and <span className="text-error font-black uppercase tracking-widest text-xs">all associated candidates</span>. This action cannot be undone.
               </p>
@@ -285,7 +285,7 @@ const JobsManagementPage: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => { setIsModalOpen(false); setEditingJob(null); }}
-              className="absolute inset-0 bg-navy-900/60 backdrop-blur-md"
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-md"
             />
             <motion.div 
               initial={{ y: 50, opacity: 0, scale: 0.95 }}
@@ -295,7 +295,7 @@ const JobsManagementPage: React.FC = () => {
             >
               <div className="p-10 lg:p-12 border-b border-bg-admin flex items-center justify-between">
                 <div>
-                  <h2 className="text-3xl font-serif text-navy-900 mb-1 italic">{editingJob ? 'Edit Position' : 'Post New Position'}</h2>
+                  <h2 className="text-3xl  text-navy-900 mb-1">{editingJob ? 'Edit Position' : 'Post New Position'}</h2>
                   <p className="text-text-admin-secondary font-black uppercase tracking-widest text-[10px]">Define requirements for AI semantic ranking.</p>
                 </div>
                 <button onClick={() => { setIsModalOpen(false); setEditingJob(null); }} className="p-3 hover:bg-bg-admin rounded-2xl text-text-admin-secondary transition-colors">

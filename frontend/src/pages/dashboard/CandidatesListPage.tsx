@@ -68,7 +68,7 @@ const CandidatesListPage: React.FC = () => {
           <Link to="/dashboard/jobs" className="text-text-admin-secondary hover:text-navy-900 font-extrabold text-[10px] uppercase tracking-[0.2em] flex items-center mb-6 transition-colors group">
             <ChevronLeft size={14} className="mr-1.5 group-hover:-translate-x-1 transition-transform" /> Back to Openings
           </Link>
-          <h1 className="text-4xl font-serif text-navy-900 mb-2 italic">{job?.title || 'Candidates'}</h1>
+          <h1 className="text-4xl  text-navy-900 mb-2">{job?.title || 'Candidates'}</h1>
           <p className="text-text-admin-secondary font-semibold uppercase tracking-widest text-xs">Reviewing {candidates.length} AI-ranked profiles.</p>
         </div>
         <div className="flex space-x-3">
@@ -90,7 +90,7 @@ const CandidatesListPage: React.FC = () => {
                 AI Match Threshold
               </span>
             </div>
-            <div className="px-5 py-2 bg-navy-900 text-blue-400 rounded-xl font-serif italic text-lg shadow-xl shadow-navy-900/10">
+            <div className="px-5 py-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl font-semibold text-lg shadow-sm">
               {threshold}%
             </div>
           </div>
@@ -106,23 +106,23 @@ const CandidatesListPage: React.FC = () => {
             />
             <span className="text-[10px] font-black text-text-admin-secondary/40">100%</span>
           </div>
-          <p className="mt-8 text-xs font-semibold text-text-admin-secondary text-center italic">
+          <p className="mt-8 text-xs font-semibold text-text-admin-secondary text-center">
             Currently displaying <span className="text-navy-900 font-black">{filteredCandidates.length}</span> out of <span className="text-navy-900 font-black">{candidates.length}</span> applicants meeting this precision level.
           </p>
         </div>
 
-        <div className="bg-navy-900 rounded-[2.5rem] p-10 text-white shadow-2xl shadow-navy-900/30 flex flex-col h-full justify-center">
+        <div className="bg-slate-50 rounded-[2.5rem] p-10 border border-border shadow-cool flex flex-col h-full justify-center">
           <div className="flex items-center space-x-4 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-blue-400">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500">
               <Users size={24} />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Application Volume</p>
-              <p className="text-2xl font-serif italic">{candidates.length} Profiles</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-admin-secondary">Application Volume</p>
+              <p className="text-2xl font-semibold text-navy-900">{candidates.length} Profiles</p>
             </div>
           </div>
-          <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-            <motion.div 
+          <div className="w-full h-2 bg-border rounded-full overflow-hidden">
+            <motion.div
               initial={{ width: 0 }}
               animate={{ width: '100%' }}
               className="h-full bg-blue-400"
@@ -186,13 +186,13 @@ const CandidatesListPage: React.FC = () => {
                   className="group cursor-pointer hover:bg-table-header/40 transition-all duration-200"
                 >
                   <td className="px-10 py-8">
-                    <div className="w-10 h-10 rounded-xl bg-bg-admin flex items-center justify-center font-serif italic text-navy-900 text-sm shadow-sm">
+                    <div className="w-10 h-10 rounded-xl bg-bg-admin flex items-center justify-center font-semibold text-navy-900 text-sm shadow-sm">
                       #{idx + 1}
                     </div>
                   </td>
                   <td className="px-10 py-8">
                     <div className="flex items-center space-x-5">
-                       <div className="w-12 h-12 rounded-2xl bg-blue-400/10 text-blue-400 flex items-center justify-center font-serif italic text-xl shadow-sm group-hover:shadow-glow group-hover:scale-105 transition-all">
+                       <div className="w-12 h-12 rounded-2xl bg-blue-400/10 text-blue-400 flex items-center justify-center font-semibold text-xl shadow-sm group-hover:shadow-glow group-hover:scale-105 transition-all">
                          {c.full_name.charAt(0)}
                        </div>
                        <div>
@@ -261,7 +261,7 @@ const CandidatesListPage: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedCandidate(null)}
-              className="fixed inset-0 bg-navy-900/40 backdrop-blur-sm z-[90]"
+              className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-[90]"
             />
             <CandidateProfilePanel
               candidate={selectedCandidate}

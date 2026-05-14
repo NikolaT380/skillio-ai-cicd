@@ -75,7 +75,7 @@ const Dashboard: React.FC = () => {
     <div className="space-y-12">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-serif text-navy-900 mb-2 italic">HR Intelligence Overview</h1>
+          <h1 className="text-4xl  text-navy-900 mb-2">HR Intelligence Overview</h1>
           <p className="text-text-admin-secondary font-semibold uppercase tracking-widest text-xs">Real-time recruitment analytics and semantic insights.</p>
         </div>
         <div className="flex items-center space-x-3 text-[10px] font-black uppercase tracking-[0.2em] text-text-admin-secondary bg-white px-5 py-3 rounded-2xl shadow-cool border border-border">
@@ -111,7 +111,7 @@ const Dashboard: React.FC = () => {
         <div className="lg:col-span-2 bg-white rounded-[2.5rem] border border-border shadow-cool p-10">
           <div className="flex items-center justify-between mb-12">
             <div>
-              <h3 className="text-2xl font-serif text-navy-900 mb-1 italic">Applications Pipeline</h3>
+              <h3 className="text-2xl  text-navy-900 mb-1">Applications Pipeline</h3>
               <p className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em]">Distribution across departments</p>
             </div>
             <div className="flex space-x-2">
@@ -151,7 +151,7 @@ const Dashboard: React.FC = () => {
 
         <div className="bg-white rounded-[2.5rem] border border-border shadow-cool p-10 flex flex-col relative overflow-hidden">
           <div className="flex items-center justify-between mb-10 relative z-10">
-            <h3 className="text-2xl font-serif italic text-navy-900">Urgent Postings</h3>
+            <h3 className="text-2xl font-semibold text-navy-900">Urgent Postings</h3>
             <Link to="/dashboard/jobs" className="p-2 bg-bg-admin rounded-xl hover:bg-slate-100 transition-all group">
               <ExternalLink size={18} className="text-blue-400 group-hover:scale-110 transition-transform" />
             </Link>
@@ -202,7 +202,7 @@ const Dashboard: React.FC = () => {
       <div className="bg-white rounded-[2.5rem] border border-border shadow-cool overflow-hidden">
         <div className="p-10 border-b border-bg-admin flex items-center justify-between">
           <div>
-            <h3 className="text-2xl font-serif text-navy-900 mb-1 italic">Recent Candidates</h3>
+            <h3 className="text-2xl  text-navy-900 mb-1">Recent Candidates</h3>
             <p className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em]">Live application stream</p>
           </div>
           <Link to="/dashboard/candidates" className="btn-primary py-3 text-xs uppercase tracking-[0.15em]">
@@ -227,7 +227,7 @@ const Dashboard: React.FC = () => {
                   <tr key={c.id} className="group hover:bg-bg-admin/50 transition-colors">
                     <td className="px-10 py-6">
                       <div className="flex items-center space-x-5">
-                        <div className="w-12 h-12 rounded-2xl bg-bg-admin flex items-center justify-center font-serif italic text-navy-900 text-xl shadow-sm group-hover:bg-blue-400 group-hover:text-white group-hover:shadow-glow transition-all duration-300">
+                        <div className="w-12 h-12 rounded-2xl bg-bg-admin flex items-center justify-center font-semibold text-navy-900 text-xl shadow-sm group-hover:bg-blue-400 group-hover:text-white group-hover:shadow-glow transition-all duration-300">
                           {c.full_name.charAt(0)}
                         </div>
                         <div>

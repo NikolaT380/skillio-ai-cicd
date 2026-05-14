@@ -17,7 +17,7 @@ const FeatureCard: React.FC<{ icon: any, title: string, description: string }> =
     whileHover={{ y: -8, boxShadow: '0 20px 40px -15px rgba(13,27,42,0.12)' }}
     className="bg-white/70 backdrop-blur-xl p-8 rounded-2xl border border-navy-700/12 flex flex-col items-start text-left transition-all duration-300 group"
   >
-    <div className="w-14 h-14 bg-gradient-to-br from-navy-700 to-blue-400 rounded-xl flex items-center justify-center text-white mb-6 shadow-glow group-hover:scale-110 transition-transform duration-300">
+    <div className="w-14 h-14 bg-blue-50 text-blue-500 border border-blue-100 rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform duration-300">
       <Icon size={28} />
     </div>
     <h3 className="text-xl font-bold mb-3 text-navy-900">{title}</h3>
@@ -52,7 +52,7 @@ const LandingPage: React.FC = () => {
                 </span>
               </motion.div>
               
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-navy-900 mb-8 leading-[1.05] tracking-tight">
+              <h1 className="text-5xl md:text-7xl lg:text-8xl  text-navy-900 mb-8 leading-[1.05] tracking-tight">
                 Find your next <br />
                 <span className="text-blue-400">great hire</span> with AI
               </h1>
@@ -85,7 +85,7 @@ const LandingPage: React.FC = () => {
                   <div className="p-8 h-full bg-gradient-to-br from-white to-bg-candidate">
                     <div className="flex items-center justify-between mb-10">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-xl bg-navy-700 flex items-center justify-center text-white font-serif italic">S</div>
+                        <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center text-white font-semibold">S</div>
                         <div className="h-4 w-24 bg-navy-700/10 rounded-full"></div>
                       </div>
                       <div className="flex space-x-2">
@@ -122,7 +122,7 @@ const LandingPage: React.FC = () => {
                       <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg shadow-green-500/20">
                         <Check size={16} strokeWidth={3} />
                       </div>
-                      <span className="font-bold text-navy-900 text-sm italic font-serif">Verified Skills</span>
+                      <span className="font-bold text-navy-900 text-sm font-semibold">Verified Skills</span>
                     </div>
                     <div className="h-2 w-24 bg-navy-700/10 rounded-full"></div>
                   </motion.div>
@@ -140,7 +140,7 @@ const LandingPage: React.FC = () => {
       <section className="py-32 bg-white relative">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-24">
-            <h2 className="text-4xl md:text-5xl font-serif text-navy-900 mb-6">How it works</h2>
+            <h2 className="text-4xl md:text-5xl  text-navy-900 mb-6">How it works</h2>
             <p className="text-text-secondary max-w-2xl mx-auto text-lg font-medium">Streamlining your recruitment pipeline in three simple steps.</p>
           </div>
           
@@ -163,8 +163,8 @@ const LandingPage: React.FC = () => {
                 viewport={{ once: true }}
                 className="relative flex flex-col items-center text-center group"
               >
-                <div className="w-24 h-24 bg-navy-900 text-white rounded-2xl flex items-center justify-center mb-10 relative z-10 shadow-2xl transition-transform duration-500 group-hover:rotate-6">
-                  <span className="font-serif italic text-4xl text-blue-400 absolute -top-4 -left-4 bg-white w-10 h-10 rounded-lg flex items-center justify-center shadow-lg border border-border">
+                <div className="w-24 h-24 bg-blue-50 text-blue-500 border border-blue-100 rounded-2xl flex items-center justify-center mb-10 relative z-10 shadow-md transition-transform duration-500 group-hover:rotate-6">
+                  <span className="font-semibold text-4xl text-blue-400 absolute -top-4 -left-4 bg-white w-10 h-10 rounded-lg flex items-center justify-center shadow-lg border border-border">
                     {idx + 1}
                   </span>
                   <step.icon size={36} />
@@ -180,7 +180,7 @@ const LandingPage: React.FC = () => {
       {/* Features */}
       <section className="py-32 relative overflow-hidden">
         {/* Background mesh for features */}
-        <div className="absolute inset-0 bg-navy-700/5 -skew-y-3 origin-left"></div>
+        <div className="absolute inset-0 bg-blue-50/60 -skew-y-3 origin-left"></div>
         
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="grid lg:grid-cols-4 gap-8">
@@ -220,7 +220,7 @@ const LandingPage: React.FC = () => {
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-400/5 rounded-full -mr-48 -mt-48 blur-3xl"></div>
             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-navy-900/5 rounded-full -ml-48 -mb-48 blur-3xl"></div>
             
-            <h2 className="text-4xl md:text-6xl font-serif mb-10 relative z-10 leading-tight">Ready to transform your hiring?</h2>
+            <h2 className="text-4xl md:text-6xl  mb-10 relative z-10 leading-tight">Ready to transform your hiring?</h2>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 relative z-10">
               <Link to="/jobs" className="btn-primary px-12 py-6 text-xl shadow-2xl">
                 Browse Open Positions

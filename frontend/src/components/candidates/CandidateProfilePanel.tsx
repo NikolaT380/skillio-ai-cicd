@@ -104,12 +104,12 @@ const CandidateProfilePanel: React.FC<CandidateProfilePanelProps> = ({
         {/* Profile Info */}
         <section className="flex flex-col items-center text-center">
           <div className="relative group">
-            <div className="w-28 h-28 rounded-[2.5rem] bg-white border border-border flex items-center justify-center text-navy-900 font-serif italic text-4xl shadow-cool mb-8 relative z-10">
+            <div className="w-28 h-28 rounded-[2.5rem] bg-white border border-border flex items-center justify-center text-navy-900 font-semibold text-4xl shadow-cool mb-8 relative z-10">
               {candidate.full_name.charAt(0)}
             </div>
             <div className="absolute inset-0 bg-blue-400 rounded-[2.5rem] blur-2xl opacity-10 group-hover:opacity-20 transition-opacity"></div>
           </div>
-          <h2 className="text-3xl font-serif italic text-navy-900 mb-4">{candidate.full_name}</h2>
+          <h2 className="text-3xl font-semibold text-navy-900 mb-4">{candidate.full_name}</h2>
           <div className="flex flex-col items-center space-y-3">
             <div className="flex items-center text-text-admin-secondary font-bold text-sm bg-slate-50 px-5 py-2 rounded-xl border border-border">
               <Mail size={16} className="mr-3 text-blue-600" /> {candidate.email}
@@ -151,12 +151,12 @@ const CandidateProfilePanel: React.FC<CandidateProfilePanelProps> = ({
                 </RadialBarChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-4xl font-serif italic text-navy-900">{(candidate.match_score * 100).toFixed(0)}%</span>
+                <span className="text-4xl font-semibold text-navy-900">{(candidate.match_score * 100).toFixed(0)}%</span>
                 <span className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em] mt-1">Accuracy</span>
               </div>
             </div>
             <div className="pl-8">
-              <h4 className="text-xl font-serif italic text-navy-900 mb-3">{scoreLabel}</h4>
+              <h4 className="text-xl font-semibold text-navy-900 mb-3">{scoreLabel}</h4>
               <p className="text-xs text-text-admin-secondary font-semibold leading-relaxed uppercase tracking-widest opacity-60">
                 Ranked via semantic alignment with role criteria.
               </p>
@@ -209,7 +209,7 @@ const CandidateProfilePanel: React.FC<CandidateProfilePanelProps> = ({
                 <Briefcase size={18} />
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-admin-secondary">Experience</span>
               </div>
-              <p className="font-serif italic text-lg text-navy-900">
+              <p className="font-semibold text-lg text-navy-900">
                 {candidate.experience_years} Years
               </p>
            </div>
@@ -218,7 +218,7 @@ const CandidateProfilePanel: React.FC<CandidateProfilePanelProps> = ({
                 <GraduationCap size={18} />
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-admin-secondary">Academic</span>
               </div>
-              <p className="font-serif italic text-lg text-navy-900 truncate" title={candidate.education || 'N/A'}>
+              <p className="font-semibold text-lg text-navy-900 truncate" title={candidate.education || 'N/A'}>
                 {candidate.education ? candidate.education.split(' ').slice(0, 2).join(' ') + '...' : 'N/A'}
               </p>
            </div>

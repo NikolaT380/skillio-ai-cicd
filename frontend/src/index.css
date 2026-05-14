@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "@fontsource/instrument-serif/index.css";
 @import "@fontsource/geist-sans/index.css";
 
 @theme {
@@ -7,27 +6,27 @@
   --color-navy-900: #0D1B2A;
   --color-navy-700: #1E3A5F;
   --color-blue-400: #4A90D9;
-  
+
   --color-bg-candidate: #FAFAF8;
   --color-bg-admin: #FFFFFF;
-  
+
   --color-text-primary: #0D1B2A;
   --color-text-secondary: #4A6080;
   --color-text-admin-secondary: #64748B;
-  
+
   --color-border: #F1F5F9;
   --color-table-header: #F8FAFC;
 
   /* Semantic Aliases */
   --color-primary: var(--color-navy-700);
   --color-accent: var(--color-blue-400);
-  
+
   --color-success: #10B981;
   --color-warning: #F59E0B;
   --color-error: #EF4444;
-  
+
   /* Typography */
-  --font-serif: "Instrument Serif", serif;
+  --font-serif: "Geist Sans", "Inter", "system-ui", sans-serif;
   --font-sans: "Geist Sans", "Inter", "system-ui", "sans-serif";
   
   /* Radii */
@@ -47,15 +46,15 @@
   }
 
   h1, h2, h3, .font-serif {
-    @apply font-serif;
+    @apply font-sans;
   }
 }
 
 @layer components {
   /* Premium SaaS Buttons */
   .btn-primary {
-    @apply bg-navy-900 text-white px-6 py-3 rounded-xl font-bold transition-all duration-200 
-           hover:shadow-cool hover:-translate-y-0.5 active:scale-95;
+    @apply bg-slate-600 text-white px-6 py-3 rounded-xl font-bold transition-all duration-200
+           hover:bg-slate-700 hover:shadow-cool hover:-translate-y-0.5 active:scale-95;
   }
   
   .btn-accent {

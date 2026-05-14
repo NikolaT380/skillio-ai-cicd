@@ -131,12 +131,12 @@ const CandidateProfile: React.FC = () => {
           <div className="bg-white p-10 rounded-[2.5rem] border border-border shadow-cool text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 to-navy-700"></div>
             <div className="relative group inline-block mb-8">
-              <div className="w-32 h-32 rounded-[3rem] bg-navy-900 flex items-center justify-center text-white font-serif italic text-5xl shadow-2xl relative z-10">
+              <div className="w-32 h-32 rounded-[3rem] bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-5xl shadow-md relative z-10">
                 {candidate.full_name.charAt(0)}
               </div>
               <div className="absolute inset-0 bg-blue-400 rounded-[3rem] blur-2xl opacity-20"></div>
             </div>
-            <h1 className="text-3xl font-serif italic text-navy-900 mb-2">{candidate.full_name}</h1>
+            <h1 className="text-3xl font-semibold text-navy-900 mb-2">{candidate.full_name}</h1>
             <p className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em] mb-8 flex items-center justify-center">
               <Clock size={12} className="mr-2 text-blue-400" /> Applied {new Date(candidate.created_at).toLocaleDateString()}
             </p>
@@ -157,9 +157,9 @@ const CandidateProfile: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-navy-900 p-10 rounded-[2.5rem] shadow-2xl shadow-navy-900/40 text-white relative overflow-hidden">
+          <div className="bg-slate-50 p-10 rounded-[2.5rem] shadow-cool border border-border relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-            <h3 className="text-xl font-serif italic mb-10 flex items-center">
+            <h3 className="text-xl font-semibold mb-10 flex items-center text-navy-900">
               <TrendingUp size={24} className="mr-3 text-blue-400" />
               AI Match Analysis
             </h3>
@@ -187,27 +187,27 @@ const CandidateProfile: React.FC = () => {
                 </RadialBarChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-5xl font-serif italic">{(candidate.match_score * 100).toFixed(0)}%</span>
-                <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mt-2">Semantic Accuracy</span>
+                <span className="text-5xl font-semibold">{(candidate.match_score * 100).toFixed(0)}%</span>
+                <span className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em] mt-2">Semantic Accuracy</span>
               </div>
             </div>
 
-            <div className="p-6 rounded-3xl bg-white/5 border border-white/5 relative z-10">
-              <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-3">AI Intelligence Note:</p>
+            <div className="p-6 rounded-3xl bg-white border border-border relative z-10">
+              <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em] mb-3">AI Intelligence Note:</p>
               <div className="flex items-start space-x-4">
                 {candidate.match_score > 0.4 ? (
                   <>
-                    <div className="w-8 h-8 rounded-xl bg-green-500/20 text-green-400 flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-xl bg-green-500/20 text-green-600 flex items-center justify-center shrink-0">
                       <CheckCircle2 size={18} />
                     </div>
-                    <p className="text-xs font-medium leading-relaxed text-white/70 italic">Candidate shows strong alignment with core requirements and mandatory criteria.</p>
+                    <p className="text-xs font-medium leading-relaxed text-text-secondary">Candidate shows strong alignment with core requirements and mandatory criteria.</p>
                   </>
                 ) : (
                   <>
                     <div className="w-8 h-8 rounded-xl bg-error/20 text-error flex items-center justify-center shrink-0">
                       <XCircle size={18} />
                     </div>
-                    <p className="text-xs font-medium leading-relaxed text-white/70 italic">Candidate lacks essential skills or experience required for this specific role.</p>
+                    <p className="text-xs font-medium leading-relaxed text-text-secondary">Candidate lacks essential skills or experience required for this specific role.</p>
                   </>
                 )}
               </div>
@@ -218,7 +218,7 @@ const CandidateProfile: React.FC = () => {
         {/* Right Column: Experience, Education & CV */}
         <div className="lg:col-span-2 space-y-10">
           <div className="bg-white p-12 rounded-[3rem] border border-border shadow-cool">
-            <h3 className="text-2xl font-serif italic text-navy-900 mb-12">Professional Profile Matrix</h3>
+            <h3 className="text-2xl font-semibold text-navy-900 mb-12">Professional Profile Matrix</h3>
             
             <div className="grid md:grid-cols-2 gap-12">
               <div className="space-y-10">
@@ -240,7 +240,7 @@ const CandidateProfile: React.FC = () => {
                     <Briefcase size={16} className="mr-3 text-blue-400" />
                     Tenure Experience
                   </h4>
-                  <p className="text-4xl font-serif italic text-navy-900">{candidate.experience_years} <span className="text-xl font-sans not-italic text-text-admin-secondary">Years</span></p>
+                  <p className="text-4xl font-semibold text-navy-900">{candidate.experience_years} <span className="text-xl font-sans not-italic text-text-admin-secondary">Years</span></p>
                 </div>
               </div>
 
@@ -250,7 +250,7 @@ const CandidateProfile: React.FC = () => {
                     <GraduationCap size={18} className="mr-3 text-blue-400" />
                     Academic Background
                   </h4>
-                  <p className="text-lg font-bold text-navy-900 leading-relaxed italic">{candidate.education || 'Credentials not extracted'}</p>
+                  <p className="text-lg font-bold text-navy-900 leading-relaxed">{candidate.education || 'Credentials not extracted'}</p>
                 </div>
 
                 <div className="space-y-6">
@@ -259,18 +259,18 @@ const CandidateProfile: React.FC = () => {
                     href={candidate.cv_url ? (/^https?:\/\//i.test(candidate.cv_url) ? candidate.cv_url : `${API_BASE_URL.replace(/\/$/, '')}/uploads/${candidate.cv_url}`) : '#'}
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between p-6 bg-navy-900 rounded-[2rem] border border-navy-700 hover:bg-navy-700 transition-all group shadow-xl"
+                    className="flex items-center justify-between p-6 bg-slate-50 rounded-[2rem] border border-border hover:bg-blue-50 hover:border-blue-100 transition-all group shadow-sm"
                   >
                     <div className="flex items-center">
-                      <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-blue-400 mr-4 group-hover:scale-110 transition-transform">
+                      <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 mr-4 group-hover:scale-110 transition-transform border border-blue-100">
                         <Download size={24} />
                       </div>
                       <div>
-                        <p className="text-white font-bold text-sm">Download_CV.pdf</p>
-                        <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mt-1">Encrypted PDF</p>
+                        <p className="text-navy-900 font-bold text-sm">Download_CV.pdf</p>
+                        <p className="text-[10px] font-black text-text-admin-secondary uppercase tracking-widest mt-1">Encrypted PDF</p>
                       </div>
                     </div>
-                    <ExternalLink size={20} className="text-white/20 group-hover:text-white transition-colors" />
+                    <ExternalLink size={20} className="text-text-admin-secondary group-hover:text-blue-500 transition-colors" />
                   </a>
                 </div>
               </div>
@@ -280,7 +280,7 @@ const CandidateProfile: React.FC = () => {
 
           <div className="bg-white rounded-[2.5rem] border border-border shadow-cool p-12 flex items-center justify-between">
             <div>
-              <h3 className="text-xl font-serif italic text-navy-900 mb-1">Application Summary</h3>
+              <h3 className="text-xl font-semibold text-navy-900 mb-1">Application Summary</h3>
               <p className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em]">Full semantic profile review completed.</p>
             </div>
             <div className="flex space-x-4">
