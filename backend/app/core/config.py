@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "AI Recruitment System API"
-    VERSION: str = "1.0.0"
+    VERSION: str = "2.0.0"
 
     POSTGRES_SERVER: str
     POSTGRES_USER: str
