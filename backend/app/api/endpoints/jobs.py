@@ -2,12 +2,12 @@ import os
 import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.api.deps import get_db, get_current_user
+from app.api.deps import get_db, get_current_user, get_current_user_optional
 from app.api.models.orm.job import Job
 from app.api.models.orm.user import User
 from app.services.embedding_service import generate_embedding
 from app.services.similarity_service import rank_candidates_for_job
-from app.schemas.job import JobCreate, JobResponse
+from app.schemas.job import JobCreate, JobUpdate, JobResponse
 from app.schemas.candidate import CandidateResponse
 from typing import List
 from pydantic import UUID4
@@ -54,23 +54,57 @@ def create_job(job_in: JobCreate, db: Session = Depends(get_db), current_user: U
         )
 
 @router.get("/", response_model=List[JobResponse])
-def get_jobs(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_jobs(
+    db: Session = Depends(get_db), 
+    current_user: User | None = Depends(get_current_user_optional)
+):
     """
-    Get all jobs created by the current HR Admin.
+    Get all jobs. If an HR Admin is logged in, this still returns all jobs, 
+    but we could easily filter by creator_id if a 'mine' query param was added.
     """
-    return db.query(Job).filter(Job.creator_id == current_user.id).all()
+    jobs = db.query(Job).all()
+    for job in jobs:
+        job.applicant_count = db.query(Candidate).filter(Candidate.job_id == job.id).count()
+    return jobs
+
+@router.patch("/{job_id}", response_model=JobResponse)
+def update_job(job_id: UUID4, job_in: JobUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    if job.creator_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You do not have permission to update this job")
+
+    update_data = job_in.model_dump(exclude_unset=True)
+
+    if "description" in update_data or "title" in update_data or "requirements" in update_data:
+        title = update_data.get("title", job.title)
+        description = update_data.get("description", job.description)
+        requirements = update_data.get("requirements", job.requirements or [])
+        embedding_content = f"{title}\n\n{description}\n\nRequirements: {', '.join(requirements)}"
+        update_data["embedding"] = generate_embedding(embedding_content)
+
+    for field, value in update_data.items():
+        setattr(job, field, value)
+
+    db.commit()
+    db.refresh(job)
+    job.applicant_count = db.query(Candidate).filter(Candidate.job_id == job.id).count()
+    return job
 
 @router.get("/{job_id}", response_model=JobResponse)
-def get_job(job_id: UUID4, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_job(job_id: UUID4, db: Session = Depends(get_db)):
     """
-    Get details of a specific job, ensuring the current user is the creator.
+    Get details of a specific job. Publicly accessible.
     """
-    job = db.query(Job).filter(Job.id == job_id, Job.creator_id == current_user.id).first()
+    job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
         raise HTTPException(
             status_code=404, 
-            detail="Job not found or you do not have permission to view it"
+            detail="Job not found"
         )
+    job.applicant_count = db.query(Candidate).filter(Candidate.job_id == job.id).count()
     return job
 
 @router.get("/{job_id}/candidates", response_model=List[CandidateResponse])
@@ -134,7 +168,7 @@ def get_ranked_candidates(
             "education": candidate.education,
             "cv_url": candidate.cv_url,
             "match_score": current_score,
-            "status": "recommended" if current_score > 0.40 else "rejected",
+            "status": candidate.status or ("recommended" if current_score > 0.40 else "rejected"),
             "created_at": candidate.created_at,
         })
 
