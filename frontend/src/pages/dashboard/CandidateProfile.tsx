@@ -63,6 +63,17 @@ const CandidateProfile: React.FC = () => {
     }
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleScheduleInterview = () => {
+    if (!candidate) return;
+    const subject = encodeURIComponent(`Interview Request - ${candidate.full_name}`);
+    const body = encodeURIComponent(`Hi ${candidate.full_name},\n\nWe would like to schedule an interview with you regarding your application for the position.\n\nBest regards,\nRecruitment Team`);
+    window.location.href = `mailto:${candidate.email}?subject=${subject}&body=${body}`;
+  };
+
   const handleDelete = async () => {
     if (window.confirm('Are you sure? This will permanently delete this candidate profile.')) {
       try {
@@ -93,7 +104,36 @@ const CandidateProfile: React.FC = () => {
 
   return (
     <div className="space-y-12">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <style>
+        {`
+          @media print {
+            .no-print, 
+            button, 
+            select, 
+            .btn-accent, 
+            .bg-gradient-to-r,
+            aside,
+            nav {
+              display: none !important;
+            }
+            .print-only {
+              display: block !important;
+            }
+            body {
+              background: white !important;
+              padding: 0 !important;
+            }
+            .bg-white {
+              border: none !important;
+              box-shadow: none !important;
+            }
+            .rounded-\\[2\\.5rem\\], .rounded-\\[3rem\\] {
+              border-radius: 0 !important;
+            }
+          }
+        `}
+      </style>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 no-print">
         <button onClick={() => navigate(-1)} className="flex items-center text-text-admin-secondary hover:text-navy-900 transition-colors group font-black text-[10px] uppercase tracking-[0.2em]">
           <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" />
           Return to Pipeline
@@ -129,12 +169,12 @@ const CandidateProfile: React.FC = () => {
         {/* Left Column: Personal Info & AI Analysis */}
         <div className="space-y-10">
           <div className="bg-white p-10 rounded-[2.5rem] border border-border shadow-cool text-center relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 to-navy-700"></div>
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 to-navy-700 no-print"></div>
             <div className="relative group inline-block mb-8">
               <div className="w-32 h-32 rounded-[3rem] bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-5xl shadow-md relative z-10">
                 {candidate.full_name.charAt(0)}
               </div>
-              <div className="absolute inset-0 bg-blue-400 rounded-[3rem] blur-2xl opacity-20"></div>
+              <div className="absolute inset-0 bg-blue-400 rounded-[3rem] blur-2xl opacity-20 no-print"></div>
             </div>
             <h1 className="text-3xl font-semibold text-navy-900 mb-2">{candidate.full_name}</h1>
             <p className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em] mb-8 flex items-center justify-center">
@@ -158,7 +198,7 @@ const CandidateProfile: React.FC = () => {
           </div>
 
           <div className="bg-slate-50 p-10 rounded-[2.5rem] shadow-cool border border-border relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-full -mr-16 -mt-16 blur-2xl no-print"></div>
             <h3 className="text-xl font-semibold mb-10 flex items-center text-navy-900">
               <TrendingUp size={24} className="mr-3 text-blue-400" />
               AI Match Analysis
@@ -253,7 +293,7 @@ const CandidateProfile: React.FC = () => {
                   <p className="text-lg font-bold text-navy-900 leading-relaxed">{candidate.education || 'Credentials not extracted'}</p>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-6 no-print">
                   <h4 className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em] mb-4">Original CV Dossier</h4>
                   <a 
                     href={candidate.cv_url ? (/^https?:\/\//i.test(candidate.cv_url) ? candidate.cv_url : `${API_BASE_URL.replace(/\/$/, '')}/uploads/${candidate.cv_url}`) : '#'}
@@ -278,16 +318,22 @@ const CandidateProfile: React.FC = () => {
 
           </div>
 
-          <div className="bg-white rounded-[2.5rem] border border-border shadow-cool p-12 flex items-center justify-between">
+          <div className="bg-white rounded-[2.5rem] border border-border shadow-cool p-12 flex items-center justify-between no-print">
             <div>
               <h3 className="text-xl font-semibold text-navy-900 mb-1">Application Summary</h3>
               <p className="text-[10px] font-black text-text-admin-secondary uppercase tracking-[0.2em]">Full semantic profile review completed.</p>
             </div>
             <div className="flex space-x-4">
-              <button className="px-8 py-4 bg-bg-admin border border-border rounded-xl text-[10px] font-black uppercase tracking-widest text-navy-900 hover:bg-white transition-all shadow-sm">
+              <button 
+                onClick={handlePrint}
+                className="px-8 py-4 bg-bg-admin border border-border rounded-xl text-[10px] font-black uppercase tracking-widest text-navy-900 hover:bg-white transition-all shadow-sm"
+              >
                 Print Report
               </button>
-              <button className="btn-accent py-4 px-8 text-[10px] uppercase tracking-widest shadow-blue-400/20 animate-shimmer">
+              <button 
+                onClick={handleScheduleInterview}
+                className="btn-accent py-4 px-8 text-[10px] uppercase tracking-widest shadow-blue-400/20 animate-shimmer"
+              >
                 Schedule Interview
               </button>
             </div>

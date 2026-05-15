@@ -10,7 +10,6 @@ import {
   XCircle,
   Briefcase,
   GraduationCap,
-  ExternalLink,
   ChevronRight,
   TrendingUp
 } from 'lucide-react';
@@ -62,6 +61,13 @@ const CandidateProfilePanel: React.FC<CandidateProfilePanelProps> = ({
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const handleScheduleInterview = () => {
+    if (!candidate) return;
+    const subject = encodeURIComponent(`Interview Request - ${candidate.full_name}`);
+    const body = encodeURIComponent(`Hi ${candidate.full_name},\n\nWe would like to schedule an interview with you regarding your application for the position.\n\nBest regards,\nRecruitment Team`);
+    window.location.href = `mailto:${candidate.email}?subject=${subject}&body=${body}`;
   };
 
   const statusOptions: Array<{ id: Candidate['status'], label: string, icon: any, color: string }> = [
@@ -235,8 +241,11 @@ const CandidateProfilePanel: React.FC<CandidateProfilePanelProps> = ({
          >
            <Download size={20} className="mr-3" /> <span className="text-xs font-black uppercase tracking-widest">Download CV</span>
          </a>
-         <button className="flex-1 px-6 py-5 rounded-2xl border border-border bg-white text-text-admin-secondary font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 hover:text-navy-900 transition-all flex items-center justify-center">
-           Contact <ExternalLink size={18} className="ml-3" />
+         <button 
+           onClick={handleScheduleInterview}
+           className="flex-1 px-6 py-5 rounded-2xl border border-border bg-white text-text-admin-secondary font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 hover:text-navy-900 transition-all flex items-center justify-center"
+         >
+           Schedule Interview <Mail size={18} className="ml-3" />
          </button>
       </div>
     </motion.div>

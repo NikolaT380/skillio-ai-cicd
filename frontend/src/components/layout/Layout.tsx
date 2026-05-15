@@ -131,7 +131,11 @@ const Layout: React.FC<LayoutProps> = ({ children, variant = 'public' }) => {
         className="hidden md:flex flex-col bg-white text-navy-900 sticky top-0 h-screen z-50 transition-all duration-300 border-r border-border shadow-sm"
       >
         <div className="p-8 h-28 flex items-center justify-between overflow-hidden">
-          {!isSidebarCollapsed && <Logo />}
+          {!isSidebarCollapsed && (
+            <Link to="/dashboard" className="hover:opacity-80 transition-opacity">
+              <Logo />
+            </Link>
+          )}
           <button 
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             className="p-2 rounded-xl bg-bg-admin hover:bg-slate-100 transition-colors ml-auto text-text-admin-secondary"
