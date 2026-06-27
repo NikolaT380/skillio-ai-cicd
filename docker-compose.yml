@@ -1,32 +1,64 @@
+networks:
+  skillio_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  skillio_pgdata:
+    driver: local
+  skillio_storage:
+    driver: local
+
 services:
-  # Database Service (PostgreSQL + pgvector)
   db:
     image: pgvector/pgvector:pg16
     container_name: skillio_db
-    restart: always
+    restart: unless-stopped
+    networks:
+      - skillio_network
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-skillio_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-skillio_pass}
       POSTGRES_DB: ${POSTGRES_DB:-ai_recruitment}
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - skillio_pgdata:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-skillio_user} -d ${POSTGRES_DB:-ai_recruitment}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 512m
 
-  # Backend Service (FastAPI)
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: runtime
+    image: nikolatane/skillio-backend:latest
     container_name: skillio_backend
-    restart: always
+    restart: unless-stopped
+    networks:
+      - skillio_network
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     env_file:
-      - ./backend/.env
+      - ./backend/.env.example
     environment:
       POSTGRES_SERVER: db
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER:-skillio_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-skillio_pass}
       POSTGRES_DB: ${POSTGRES_DB:-ai_recruitment}
       STORAGE_TYPE: local
       LOCAL_STORAGE_DIR: /app/storage
@@ -34,20 +66,41 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
-      - ./storage:/app/storage
+      - skillio_storage:/app/storage
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 8s
+      retries: 4
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512m
 
-  # Frontend Service (React + Vite)
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: nikolatane/skillio-frontend:latest
     container_name: skillio_frontend
-    restart: always
-    ports:
-      - "3000:3000"
+    restart: unless-stopped
+    networks:
+      - skillio_network
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     environment:
       VITE_API_URL: http://localhost:8000
-
-volumes:
-  postgres_data:
+    ports:
+      - "3000:80"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80 || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 256m

@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: skillio-db-headless
+  namespace: skillio-prod
+  labels:
+    app.kubernetes.io/component: database
+spec:
+  clusterIP: None
+  selector:
+    app: skillio-db
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: skillio-backend-svc
+  namespace: skillio-prod
+  labels:
+    app.kubernetes.io/component: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: skillio-backend
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: skillio-frontend-svc
+  namespace: skillio-prod
+  labels:
+    app.kubernetes.io/component: frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: skillio-frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
