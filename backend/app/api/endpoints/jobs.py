@@ -46,7 +46,7 @@ def create_job(job_in: JobCreate, db: Session = Depends(get_db), current_user: U
 
         return job
 
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise HTTPException(
             status_code=500, 
