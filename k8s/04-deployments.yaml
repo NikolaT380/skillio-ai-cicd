@@ -31,14 +31,14 @@ spec:
                 name: skillio-db-credentials
           livenessProbe:
             httpGet:
-              path: /health
+              path: /docs
               port: 8000
             initialDelaySeconds: 30
             periodSeconds: 15
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /health
+              path: /docs
               port: 8000
             initialDelaySeconds: 15
             periodSeconds: 10

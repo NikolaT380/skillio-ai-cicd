@@ -68,7 +68,7 @@ services:
     volumes:
       - skillio_storage:/app/storage
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/docs || exit 1"]
       interval: 15s
       timeout: 8s
       retries: 4
