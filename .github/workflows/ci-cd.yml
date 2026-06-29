@@ -125,3 +125,41 @@ jobs:
           echo "Frontend: nikolatane/skillio-frontend"
           echo "Commit SHA: ${{ github.sha }}"
           echo "Branch: ${{ github.ref_name }}"
+
+  deploy:
+    name: Deploy to K3D Cluster
+    runs-on: self-hosted
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set kubectl context
+        run: kubectl config use-context k3d-skillio-cluster
+
+      - name: Verify cluster connection
+        run: kubectl cluster-info --context k3d-skillio-cluster
+
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f k8s/00-namespace.yaml
+          kubectl apply -f k8s/01-configmap-secret.yaml
+          kubectl apply -f k8s/02-statefulset-db.yaml
+          kubectl apply -f k8s/03-services.yaml
+          kubectl apply -f k8s/04-deployments.yaml
+          kubectl apply -f k8s/05-ingress.yaml
+
+      - name: Force pull new images and restart
+        run: |
+          kubectl rollout restart deployment/skillio-backend -n skillio-prod
+          kubectl rollout restart deployment/skillio-frontend -n skillio-prod
+
+      - name: Wait for rollout to complete
+        run: |
+          kubectl rollout status deployment/skillio-backend -n skillio-prod --timeout=120s
+          kubectl rollout status deployment/skillio-frontend -n skillio-prod --timeout=120s
+
+      - name: Verify deployment
+        run: kubectl get pods -n skillio-prod
